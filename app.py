@@ -174,12 +174,20 @@ st.markdown(f"""
     [data-testid="stToolbar"] {{ display: none !important; }}
     .stDeployButton {{ display: none !important; }}
     
-    /* Hide Streamlit Community Cloud Manage App Badge in bottom right */
+    /* Hide Streamlit Community Cloud Manage App Badge and Hosted with Streamlit Badge in bottom right */
     .viewerBadge {{ display: none !important; }}
-    [data-testid="viewerBadge"] {{ display: none !important; }}
     .stViewerBadge {{ display: none !important; }}
     #viewer-badge {{ display: none !important; }}
+    [data-testid="viewerBadge"] {{ display: none !important; }}
+    [data-testid="stViewerBadge"] {{ display: none !important; }}
+    a[href*="streamlit.io"] {{ display: none !important; }}
+    a[href*="streamlit.app"] {{ display: none !important; }}
+    div[class*="viewerBadge"] {{ display: none !important; }}
+    div[class*="stViewerBadge"] {{ display: none !important; }}
+    a[class*="viewerBadge"] {{ display: none !important; }}
+    a[class*="stViewerBadge"] {{ display: none !important; }}
     iframe[title="Manage app"] {{ display: none !important; }}
+    iframe[src*="viewerBadge"] {{ display: none !important; }}
     
     /* Hide Streamlit logos, icons, top decorations and loading widgets */
     img[src*="streamlit"] {{ display: none !important; }}
