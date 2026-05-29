@@ -5,4 +5,4 @@ enableCORS = false
 enableXsrfProtection = false
 
 [client]
-toolbarMode = "viewer"
+toolbarMode = "minimal"

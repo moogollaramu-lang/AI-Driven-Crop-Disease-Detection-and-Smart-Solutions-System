@@ -15,24 +15,40 @@ st.set_page_config(page_title="AI Driven Crop Disease Detection and Smart Soluti
 # Hide Streamlit Branding
 st.markdown("""
 <style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-
-[data-testid="stDecoration"] {
-    display: none;
-}
+#MainMenu {{ visibility: hidden !important; }}
+[data-testid="stMainMenu"] {{ display: none !important; }}
+footer {{ visibility: hidden !important; }}
+[data-testid="stToolbar"] {{ display: none !important; }}
+.stDeployButton {{ display: none !important; }}
+[data-testid="stHeader"] {{ display: none !important; }}
+header {{ display: none !important; }}
+.stAppHeader {{ display: none !important; }}
+div[class*="stAppHeader"] {{ display: none !important; }}
+[data-testid="stSidebar"] {{ display: none !important; }}
+[data-testid="collapsedControl"] {{ display: none !important; }}
 
 /* Hide Streamlit Community Cloud Manage App Badge & red watermark */
-.viewerBadge { display: none !important; }
-.stViewerBadge { display: none !important; }
-#viewer-badge { display: none !important; }
-[data-testid="viewerBadge"] { display: none !important; }
-[data-testid="stViewerBadge"] { display: none !important; }
-a[href*="streamlit.io"] { display: none !important; }
-a[href*="streamlit.app"] { display: none !important; }
-iframe[title="Manage app"] { display: none !important; }
-iframe[src*="viewerBadge"] { display: none !important; }
+.viewerBadge {{ display: none !important; }}
+.stViewerBadge {{ display: none !important; }}
+#viewer-badge {{ display: none !important; }}
+[data-testid="viewerBadge"] {{ display: none !important; }}
+[data-testid="stViewerBadge"] {{ display: none !important; }}
+a[href*="streamlit.io"] {{ display: none !important; }}
+a[href*="streamlit.app"] {{ display: none !important; }}
+div[class*="viewerBadge"] {{ display: none !important; }}
+div[class*="stViewerBadge"] {{ display: none !important; }}
+a[class*="viewerBadge"] {{ display: none !important; }}
+a[class*="stViewerBadge"] {{ display: none !important; }}
+iframe[title="Manage app"] {{ display: none !important; }}
+iframe[src*="viewerBadge"] {{ display: none !important; }}
+
+/* Hide Streamlit logos, icons, top decorations and loading widgets */
+img[src*="streamlit"] {{ display: none !important; }}
+svg[class*="streamlit"] {{ display: none !important; }}
+.stLogo {{ display: none !important; }}
+[data-testid="stLogo"] {{ display: none !important; }}
+div[data-testid="stDecoration"] {{ display: none !important; }}
+div[data-testid="stStatusWidget"] {{ display: none !important; }}
 </style>
 """, unsafe_allow_html=True)
 
