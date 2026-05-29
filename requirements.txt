@@ -3,4 +3,3 @@ numpy
 pillow
 torch
 torchvision
-streamlit-back-camera-input
