@@ -11,6 +11,22 @@ import textwrap
 
 # Set Streamlit Page Configuration
 st.set_page_config(page_title="AI Driven Crop Disease Detection and Smart Solutions System", page_icon="🌱", layout="wide", initial_sidebar_state="collapsed")
+# Hide Streamlit Branding
+st.markdown("""
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+[data-testid="stDecoration"] {
+    display: none;
+}
+
+iframe {
+    display: none;
+}
+</style>
+""", unsafe_allow_html=True)
 
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
