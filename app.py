@@ -359,7 +359,12 @@ with col_left:
 """, unsafe_allow_html=True)
         elif nav_selection == "ANALYZE":
             # Use file name or ID to prevent re-analyzing the same image on every page refresh
-            file_identifier = uploaded_file.name if input_type == "Upload File" else f"camera_{camera_file.size}_{hash(camera_file.getvalue())}"
+            if input_type == "Upload File":
+                file_identifier = uploaded_file.name
+            elif input_type == "Camera (Front)":
+                file_identifier = f"camera_{camera_file.size}_{hash(camera_file.getvalue())}"
+            else:
+                file_identifier = f"rear_camera_{rear_camera_file.size}_{hash(rear_camera_file.getvalue())}"
             
             if "current_analysis" not in st.session_state or st.session_state.get("last_file") != file_identifier:
                 with st.spinner("Processing Specimen Data..."):
