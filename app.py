@@ -11,6 +11,7 @@ import textwrap
 
 # Set Streamlit Page Configuration
 st.set_page_config(page_title="AI Driven Crop Disease Detection and Smart Solutions System", page_icon="🌱", layout="wide", initial_sidebar_state="collapsed")
+
 # Hide Streamlit Branding
 st.markdown("""
 <style>
@@ -22,9 +23,16 @@ header {visibility: hidden;}
     display: none;
 }
 
-iframe {
-    display: none;
-}
+/* Hide Streamlit Community Cloud Manage App Badge & red watermark */
+.viewerBadge { display: none !important; }
+.stViewerBadge { display: none !important; }
+#viewer-badge { display: none !important; }
+[data-testid="viewerBadge"] { display: none !important; }
+[data-testid="stViewerBadge"] { display: none !important; }
+a[href*="streamlit.io"] { display: none !important; }
+a[href*="streamlit.app"] { display: none !important; }
+iframe[title="Manage app"] { display: none !important; }
+iframe[src*="viewerBadge"] { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
