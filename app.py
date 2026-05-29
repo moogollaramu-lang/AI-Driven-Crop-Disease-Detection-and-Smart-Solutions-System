@@ -934,22 +934,12 @@ with col_left:
                 # Detect state to show relevant schemes
                 detected_state = st.session_state.get('detected_region', 'Andhra Pradesh')
                 
-                # Real-time indicator
+                # State indicator
                 st.markdown(f"""
-                <div style='display: flex; align-items: center; gap: 10px; margin: 10px 0 20px 0; background: #f0f9ff; padding: 10px 18px; border-radius: 50px; border: 1px solid #bae6fd;'>
-                    <span class='pulse-blue' style='width: 10px; height: 10px; background: #0ea5e9; border-radius: 50%; display: inline-block;'></span>
-                    <span style='font-size: 0.75rem; color: #0369a1; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>Live Region: {detected_state}</span>
+                <div style='display: flex; align-items: center; gap: 10px; margin: 10px 0 20px 0; background: #f0fdf4; padding: 10px 18px; border-radius: 50px; border: 1px solid #bbf7d0;'>
+                    <span style='width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;'></span>
+                    <span style='font-size: 0.75rem; color: #166534; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>Region: {detected_state} (2026 Schemes)</span>
                 </div>
-                <style>
-                .pulse-blue {{
-                    animation: pulse-blue 2s infinite;
-                }}
-                @keyframes pulse-blue {{
-                    0% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }}
-                    70% {{ transform: scale(1); box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }}
-                    100% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }}
-                }}
-                </style>
                 """, unsafe_allow_html=True)
                 
                 prefix = "ap" if "Andhra" in detected_state else "ts"

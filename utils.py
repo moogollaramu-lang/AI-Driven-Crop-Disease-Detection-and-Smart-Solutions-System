@@ -287,39 +287,17 @@ import json
 
 def get_weather(lang="English"):
     """
-    Fetches real-time weather using wttr.in, automatically detecting the user's location based on IP.
+    Statically returns weather for Andhra Pradesh, completely bypassing IP geolocation tracking.
     Returns a tuple: (formatted_weather_string, detected_region, detected_area)
     """
     from translations import TRANSLATIONS
     t = TRANSLATIONS.get(lang, TRANSLATIONS["English"])
-    try:
-        req = urllib.request.Request("https://wttr.in/?format=j1", headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=2) as response:
-            data = json.loads(response.read().decode())
-            current = data['current_condition'][0]
-            temp = current['temp_C']
-            condition = current['weatherDesc'][0]['value']
-            
-            # Extract detected region and area
-            try:
-                region = data['nearest_area'][0]['region'][0]['value']
-                area = data['nearest_area'][0]['areaName'][0]['value']
-            except:
-                region = "Andhra Pradesh"
-                area = "Guntur" # Fallback
-            
-            advice = t['weather_adv_good']
-            if "rain" in condition.lower() or "shower" in condition.lower():
-                advice = t['weather_adv_rain']
-            elif float(temp) > 35:
-                advice = t['weather_adv_heat']
-            elif float(temp) < 10:
-                advice = t['weather_adv_cold']
-                
-            return f"{temp}°C, {condition} - {advice}", region, area
-    except Exception as e:
-        # Robust fallback string ensuring temp_C and condition split cleanly
-        return f"28°C, Partly Cloudy - {t['weather_adv_good']}", "Andhra Pradesh", "Guntur"
+    temp = "28"
+    condition = "Partly Cloudy"
+    advice = t['weather_adv_good']
+    region = "Andhra Pradesh"
+    area = "Guntur"
+    return f"{temp}°C, {condition} - {advice}", region, area
 
 def get_mandi_rates(lang="English", region=None):
     """
