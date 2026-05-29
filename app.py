@@ -174,6 +174,13 @@ st.markdown(f"""
     [data-testid="stToolbar"] {{ display: none !important; }}
     .stDeployButton {{ display: none !important; }}
     
+    /* Hide Streamlit Community Cloud Manage App Badge in bottom right */
+    .viewerBadge {{ display: none !important; }}
+    [data-testid="viewerBadge"] {{ display: none !important; }}
+    .stViewerBadge {{ display: none !important; }}
+    #viewer-badge {{ display: none !important; }}
+    iframe[title="Manage app"] {{ display: none !important; }}
+    
     /* Responsive max width */
     .block-container {{ max-width: 1200px; padding-top: 2rem !important; padding-bottom: 4rem !important; }}
     
