@@ -181,6 +181,14 @@ st.markdown(f"""
     #viewer-badge {{ display: none !important; }}
     iframe[title="Manage app"] {{ display: none !important; }}
     
+    /* Hide Streamlit logos, icons, top decorations and loading widgets */
+    img[src*="streamlit"] {{ display: none !important; }}
+    svg[class*="streamlit"] {{ display: none !important; }}
+    .stLogo {{ display: none !important; }}
+    [data-testid="stLogo"] {{ display: none !important; }}
+    div[data-testid="stDecoration"] {{ display: none !important; }}
+    div[data-testid="stStatusWidget"] {{ display: none !important; }}
+    
     /* Responsive max width */
     .block-container {{ max-width: 1200px; padding-top: 2rem !important; padding-bottom: 4rem !important; }}
     
