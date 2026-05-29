@@ -39,7 +39,8 @@ st.markdown(f"""
         background-attachment: fixed;
     }}
     
-    [data-testid="stHeader"] {{ background-color: transparent !important; }}
+    [data-testid="stHeader"] {{ display: none !important; }}
+    header {{ display: none !important; }}
     [data-testid="stSidebar"] {{ display: none !important; }}
     [data-testid="collapsedControl"] {{ display: none !important; }}
     
@@ -167,8 +168,11 @@ st.markdown(f"""
     }}
     
     /* Hide specific streamlit elements */
-    #MainMenu {{visibility: hidden;}}
-    footer {{visibility: hidden;}}
+    #MainMenu {{ visibility: hidden !important; }}
+    [data-testid="stMainMenu"] {{ display: none !important; }}
+    footer {{ visibility: hidden !important; }}
+    [data-testid="stToolbar"] {{ display: none !important; }}
+    .stDeployButton {{ display: none !important; }}
     
     /* Responsive max width */
     .block-container {{ max-width: 1200px; padding-top: 2rem !important; padding-bottom: 4rem !important; }}
