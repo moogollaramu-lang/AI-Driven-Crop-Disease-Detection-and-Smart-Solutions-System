@@ -1,0 +1,27 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Large datasets & local files
+PlantVillage-Dataset-master/
+plantvillage.zip
+dog.jpg
+human.jpg
+leaf.jpg
+
+# Environment & Secrets
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+.git-credentials
+.netrc
+.pypirc
+
+# VS Code & OS
+.vscode/
+.DS_Store
+Thumbs.db

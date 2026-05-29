@@ -1,0 +1,944 @@
+import streamlit as st
+import numpy as np
+from PIL import Image
+from translations import TRANSLATIONS
+from utils import is_leaf, predict_disease, get_recommendations, get_weather, get_mandi_rates, get_regional_crop_threats, get_community_connectivity
+import disease_database
+import time
+import base64
+import os
+import textwrap
+
+# Set Streamlit Page Configuration
+st.set_page_config(page_title="AI Driven Crop Disease Detection and Smart Solutions System", page_icon="🌱", layout="wide", initial_sidebar_state="collapsed")
+
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        return base64.b64encode(f.read()).decode()
+
+def get_background_url():
+    for ext in ["jpg", "jpeg", "png"]:
+        bg_path = f"background.{ext}"
+        if os.path.exists(bg_path):
+            bg_base64 = get_base64_of_bin_file(bg_path)
+            mime_ext = "jpeg" if ext in ["jpg", "jpeg"] else "png"
+            return f"data:image/{mime_ext};base64,{bg_base64}"
+    return "https://images.unsplash.com/photo-1592982537447-6f2a6a0a3023?q=80&w=2000&auto=format&fit=crop"
+
+bg_url = get_background_url()
+
+# Custom CSS for Botanica UI
+st.markdown(f"""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+    [data-testid="stAppViewContainer"] {{
+        background-image: url('{bg_url}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+    
+    [data-testid="stHeader"] {{ background-color: transparent !important; }}
+    [data-testid="stSidebar"] {{ display: none !important; }}
+    [data-testid="collapsedControl"] {{ display: none !important; }}
+    
+    body, .stApp, p, span, div {{ font-family: 'Inter', sans-serif; color: #4a4a4a; }}
+    h1, h2, h3, h4, h5, h6 {{ font-family: 'Playfair Display', serif; color: #2c3e2e; }}
+    
+    .botanica-logo-area {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }}
+    .botanica-logo-icon {{
+        background: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        margin-bottom: 10px;
+        border: 1px solid #e0e0e0;
+    }}
+    .botanica-title {{
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        letter-spacing: 0.2rem;
+        color: #2c3e2e;
+        margin: 0;
+        text-transform: uppercase;
+        font-weight: 600;
+    }}
+    
+    /* Botanica Cards */
+    .b-card {{
+        background: rgba(244, 241, 235, 0.95);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid rgba(255,255,255,0.8);
+    }}
+    
+    /* Main Right Card */
+    .b-main-card {{
+        background: rgba(244, 241, 235, 0.95);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        min-height: 600px;
+        border: 1px solid rgba(255,255,255,0.8);
+    }}
+    
+    /* Pills */
+    .pill-red {{ background: #fff0f0; color: #d32f2f; border: 1px solid #ffcccc; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block; }}
+    .pill-green {{ background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block; }}
+    .pill-dark {{ background: #3c5a45; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block; margin-right: 10px; }}
+    .pill-light {{ background: #e8ede9; color: #3c5a45; border: 1px solid #d1ded3; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block; }}
+    
+    /* Result title */
+    .result-title {{ font-family: 'Playfair Display', serif; font-size: 2.6rem; color: #2c3e2e; line-height: 1.2; margin-top: 15px; margin-bottom: 25px; }}
+    
+    /* Weather / Mini cards */
+    .mini-card {{ background: rgba(244, 241, 235, 0.95); border-radius: 20px; padding: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.8); }}
+    .mini-card h4 {{ font-family: 'Inter', sans-serif; font-size: 0.65rem; color: #888; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.1rem; font-weight: 700; }}
+    .mini-card p {{ font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #2c3e2e; margin: 0; }}
+    
+    /* Solution block */
+    .solution-block {{ background: #eef2ed; border-radius: 12px; padding: 25px; border: 1px solid #d1ded3; margin-top: 20px; margin-bottom: 20px; }}
+    .solution-block h4 {{ font-family: 'Inter', sans-serif; font-size: 0.7rem; color: #3c5a45; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05rem; font-weight: 700; }}
+    .solution-block p {{ color: #4a4a4a; font-size: 0.95rem; line-height: 1.6; margin: 0; }}
+    
+    /* Preventive measures block */
+    .preventive-block {{ background: #ffffff; border-radius: 12px; padding: 25px; border: 1px solid #e0e0e0; margin-bottom: 20px; }}
+    .preventive-block h4 {{ font-family: 'Inter', sans-serif; font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.05rem; font-weight: 700; }}
+    .preventive-block li {{ color: #4a4a4a; font-size: 0.95rem; line-height: 1.8; margin-bottom: 8px; }}
+    
+    /* Primary Button */
+    button[kind="primary"] {{
+        background: #3c5a45 !important;
+        color: white !important;
+        border-radius: 30px !important;
+        padding: 12px 24px !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        border: none !important;
+        width: 100% !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 10px rgba(60, 90, 69, 0.3) !important;
+    }}
+    button[kind="primary"] * {{
+        color: white !important;
+    }}
+    button[kind="primary"]:hover {{
+        background: #2c4233 !important;
+        transform: translateY(-2px);
+    }}
+    
+    /* Secondary Pill Button */
+    button[kind="secondary"] {{
+        background: #e8ede9 !important;
+        color: #3c5a45 !important;
+        border-radius: 20px !important;
+        padding: 4px 14px !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        border: 1px solid #d1ded3 !important;
+        width: auto !important;
+        float: right !important;
+        transition: all 0.3s ease !important;
+    }}
+    button[kind="secondary"]:hover {{
+        background: #d1ded3 !important;
+    }}
+    
+    /* File uploader custom style */
+    [data-testid="stFileUploader"] {{
+        background: white;
+        border-radius: 12px;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+    }}
+    
+    /* Hide specific streamlit elements */
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+    
+    /* Responsive max width */
+    .block-container {{ max-width: 1200px; padding-top: 2rem !important; padding-bottom: 4rem !important; }}
+    
+    /* Action Buttons row at bottom */
+    .action-btn {{
+        background: white; 
+        border: 1px solid #d1ded3; 
+        padding: 8px 16px; 
+        border-radius: 20px; 
+        color: #3c5a45; 
+        font-weight: 600; 
+        font-size: 0.75rem; 
+        display: inline-block;
+        margin-right: 10px;
+    }}
+    
+    /* Style Streamlit native bordered containers to be solid white cards */
+    div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stVerticalBlockBorderWrapper"] > div,
+    div[data-testid="stVerticalBlockBorderWrapper"] > div > div,
+    div[data-testid="stVerticalBlock"] > div[style*="border"],
+    div[data-testid="stVerticalBlock"] > div[style*="border"] > div,
+    div[data-testid="stVerticalBlock"] > div[style*="border"] > div > div {{
+        background-color: #ffffff !important;
+        background: #ffffff !important;
+        border-radius: 20px !important;
+        padding: 25px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.8) !important;
+    }}
+</style>
+""", unsafe_allow_html=True)
+
+# Fetch Weather Info (Dynamically based on language)
+lang = st.session_state.get('lang', 'English')
+if 'weather_lang' not in st.session_state or st.session_state.weather_lang != lang:
+    st.session_state.weather, st.session_state.detected_region, st.session_state.detected_area = get_weather(lang)
+    st.session_state.weather_lang = lang
+
+weather_str = st.session_state.weather
+temp_str = "--°C"
+cond_str = "Unknown"
+if "°C" in weather_str:
+    temp_str = weather_str.split("°C")[0] + "°C"
+    try:
+        cond_str = weather_str.split("°C, ")[1].split(" - ")[0]
+    except:
+        pass
+
+# Initialize History
+if 'history' not in st.session_state:
+    st.session_state.history = []
+
+# Top Bar Language Selection (Float Right visually)
+col_lang_left, col_lang_right = st.columns([8, 1])
+with col_lang_right:
+    lang = st.selectbox("Language", ["English", "Hindi", "Telugu"], key="lang", label_visibility="collapsed")
+    t = TRANSLATIONS[lang]
+
+# Centered Logo and Title
+st.markdown("""
+<div class='botanica-logo-area'>
+    <div class='botanica-logo-icon'>🌱</div>
+    <h1 class='botanica-title'>AI Driven Crop Disease Detection and Smart Solutions System</h1>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<div style='margin-bottom: 40px;'></div>", unsafe_allow_html=True)
+
+col_left, col_space, col_right = st.columns([1.2, 0.1, 2.5])
+    
+with col_left:
+    # Upload
+    upload_container = st.container(border=True)
+    with upload_container:
+        st.markdown(f"""
+<div style='display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 15px;'>
+<h3 style='font-family: Playfair Display, serif; font-size: 1.4rem; color: #2c3e2e; margin: 0;'>{t['up_img']}</h3>
+<span style='font-size: 0.65rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['reset']}</span>
+</div>
+""", unsafe_allow_html=True)
+        
+        input_type = st.radio("Choose Input Method", ["Upload File", "Camera"], horizontal=True, label_visibility="collapsed")
+        
+        image = None
+        if input_type == "Upload File":
+            uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
+            if uploaded_file is not None:
+                image = Image.open(uploaded_file)
+                st.image(image, width='stretch', caption="Main Specimen")
+        else:
+            camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
+            if camera_file is not None:
+                image = Image.open(camera_file)
+                st.image(image, width='stretch', caption="Main Specimen")
+    
+    # Weather Split
+    display_temp = temp_str
+    display_cond = cond_str
+    
+    w1, w2 = st.columns(2)
+    with w1:
+        st.markdown(f"""
+        <div class='mini-card'>
+            <h4>🌡️ {t['w_temp']}</h4>
+            <p>{display_temp}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with w2:
+        st.markdown(f"""
+        <div class='mini-card'>
+            <h4>☁️ {t['w_cond']}</h4>
+            <p style='font-size: 1.1rem; margin-top: 10px;'>{display_cond}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_right:
+        nav_selection = st.pills("Navigation", ["ANALYZE", "ENCYCLOPEDIA", "SCHEMES", "HISTORY", "DOCTOR AI", "FIELD HUB"], default="ANALYZE", label_visibility="collapsed")
+        
+        if nav_selection == "ANALYZE" and image is None:
+            st.markdown(f"""
+<div class='b-main-card'>
+<div style='display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 400px; color: #888;'>
+<div style='font-size: 3rem; margin-bottom: 20px; opacity: 0.4;'>🍃</div>
+<h2 style='color: #666; font-family: Playfair Display;'>{t['awaiting']}</h2>
+<p style='font-size: 0.9rem;'>{t['awaiting_sub']}</p>
+</div>
+</div>
+""", unsafe_allow_html=True)
+        elif nav_selection == "ANALYZE":
+            # Use file name or ID to prevent re-analyzing the same image on every page refresh
+            file_identifier = uploaded_file.name if input_type == "Upload File" else f"camera_{camera_file.size}_{hash(camera_file.getvalue())}"
+            
+            if "current_analysis" not in st.session_state or st.session_state.get("last_file") != file_identifier:
+                with st.spinner("Processing Specimen Data..."):
+                    time.sleep(1.0) # Slight delay for visual effect on first load
+                    disease_en, confidence = predict_disease(image)
+                    if not is_leaf(image) or confidence < 45.0:
+                        st.session_state.current_analysis = {"valid": False}
+                    else:
+                        st.session_state.current_analysis = {
+                            "valid": True,
+                            "disease_en": disease_en,
+                            "confidence": confidence
+                        }
+                        
+                        # Add to history exactly once per new image
+                        st.session_state.history.append({
+                            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                            "disease_en": disease_en,
+                            "confidence": f"{confidence:.2f}%"
+                        })
+                st.session_state.last_file = file_identifier
+                
+            # Render from session state
+            analysis = st.session_state.current_analysis
+            
+            if not analysis["valid"]:
+                st.markdown(f"""
+<div class='b-main-card'>
+<span class='pill-red'>{t['invalid']}</span>
+<h1 class='result-title'>{t['invalid_title']}</h1>
+<div class='solution-block'>
+<h4>{t['system_warning']}</h4>
+<p>{t['invalid_desc']}</p>
+</div>
+</div>
+""", unsafe_allow_html=True)
+            else:
+                disease_en = analysis["disease_en"]
+                confidence = analysis["confidence"]
+                
+                # Dynamically translate based on current selected lang
+                disease_translated, solution, new_crops, fertilizer, pesticides, organic = get_recommendations(disease_en, lang)
+                
+                is_healthy = "healthy" in disease_en.lower()
+                status_pill = f"<span class='pill-green'>{t['healthy_pill']}</span>" if is_healthy else f"<span class='pill-red'>{t['infected_pill']}</span>"
+                crop_name = disease_translated.split('-')[0].strip() if '-' in disease_translated else t['crop']
+                
+                # Generate preventive measures bullet points
+                sentences = [s.strip() + "." for s in solution.split(".") if len(s.strip()) > 5]
+                bullets = "".join([f"<li>{s}</li>" for s in sentences])
+                
+                st.markdown(f"""
+<div class='b-main-card'>
+<div style='margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;'>
+{status_pill}
+<span class='action-btn' style='margin: 0;'>{t['download']}</span>
+</div>
+<div style='margin-bottom: 25px;'>
+<span class='pill-dark'>{t['crop']}: {crop_name.upper()}</span>
+<span style='font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['ai_id']} ({confidence:.1f}%)</span>
+</div>
+
+<h1 class='result-title'>{disease_translated}</h1>
+
+<!-- Internal Fake Tabs -->
+<div style='display: flex; gap: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 30px; margin-top: 30px;'>
+<span style='background: #3c5a45; color: white; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 0.8rem;'>{t['diagnosis']}</span>
+</div>
+
+<div class='solution-block'>
+<h4>{t['rec_solution']}</h4>
+<p>{solution}</p>
+</div>
+
+<div class='preventive-block'>
+<h4>{t['prev_measures']}</h4>
+<ul style='padding-left: 20px;'>
+{bullets}
+<li><strong>{t['rec_fert']}</strong> <span style='color: #3c5a45; font-weight: 500;'>{fertilizer}</span></li>
+<li><strong>{t['comp_crops']}</strong> <span style='color: #3c5a45; font-weight: 500;'>{new_crops}</span></li>
+<li><strong>{t.get('rec_pest', 'Target Pesticide/Fungicide:')}</strong> <span style='color: #b91c1c; font-weight: 500;'>{pesticides}</span></li>
+<li><strong>{t.get('rec_org', 'Organic/Biological Protocol:')}</strong> <span style='color: #15803d; font-weight: 500;'>{organic}</span></li>
+</ul>
+</div>
+
+<div style='margin-top: 35px;'>
+<span class='action-btn'>{t['rate']}</span>
+<span class='action-btn'>{t['fix']}</span>
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+        elif nav_selection == "ENCYCLOPEDIA":
+            enc_tab = st.pills("Encyclopedia Tabs", [t['enc_t1'], t['enc_t2'], t['enc_t3']], default=t['enc_t1'], label_visibility="collapsed")
+            
+            # Custom helper to strip HTML tags and convert them to clean Markdown styling
+            def clean_html_to_markdown(text):
+                if not isinstance(text, str):
+                    return text
+                text = text.replace("<strong>", "**").replace("</strong>", "**")
+                text = text.replace("<em>", "*").replace("</em>", "*")
+                text = text.replace("<b>", "**").replace("</b>", "**")
+                text = text.replace("<i>", "*").replace("</i>", "*")
+                return text
+
+            # We style this using Streamlit containers to look like a solid card!
+            with st.container(border=True):
+                st.markdown(f"<h2 class='result-title' style='margin-top: 0;'>{t['enc_title']}</h2>", unsafe_allow_html=True)
+                
+                if enc_tab == t['enc_t1']:
+                    crop_select_labels = {
+                        "English": "Select Crop to Explore",
+                        "Hindi": "अन्वेषण के लिए फसल चुनें",
+                        "Telugu": "అన్వేషించడానికి పంటను ఎంచుకోండి"
+                    }
+                    
+                    available_crops = list(disease_database.CROP_DATA.keys())
+                    crop_options = {}
+                    for key in available_crops:
+                        crop_name = disease_database.CROP_DATA[key].get(lang, disease_database.CROP_DATA[key]["English"])
+                        crop_options[crop_name] = key
+                    
+                    sorted_crop_names = sorted(list(crop_options.keys()))
+                    
+                    selected_crop_name = st.selectbox(
+                        crop_select_labels.get(lang, "Select Crop to Explore"),
+                        options=sorted_crop_names,
+                        key="encyclopedia_crop_select"
+                    )
+                    
+                    selected_crop_key = crop_options[selected_crop_name]
+                    diseases = disease_database.get_crop_diseases_encyclopedia(selected_crop_key, lang)
+                    
+                    # Localized disease selection labels
+                    disease_select_labels = {
+                        "English": "Select Disease / Condition",
+                        "Hindi": "रोग / स्थिति चुनें",
+                        "Telugu": "వ్యాధి / పరిస్థితిని ఎంచుకోండి"
+                    }
+                    
+                    disease_titles = [d["title"] for d in diseases]
+                    selected_disease_title = st.selectbox(
+                        disease_select_labels.get(lang, "Select Disease / Condition"),
+                        options=disease_titles,
+                        key="encyclopedia_disease_select"
+                    )
+                    
+                    selected_disease = next(d for d in diseases if d["title"] == selected_disease_title)
+                    
+                    # Renders a neat sub-container for the selected disease
+                    with st.container(border=True):
+                        c1, c2 = st.columns([3, 1])
+                        with c1:
+                            st.markdown(f"### {selected_disease['title']}")
+                        with c2:
+                            if selected_disease["is_healthy"]:
+                                st.success(t['healthy_pill'])
+                            else:
+                                st.error(t['infected_pill'])
+                        
+                        # Clean up/prepare lists and elements
+                        sol_text = selected_disease['solution']
+                        sentences = [s.strip() + "." for s in sol_text.split(".") if len(s.strip()) > 5]
+                        bullets = "".join([f"<li>{s}</li>" for s in sentences])
+                        
+                        target_pest_label = t.get('rec_pest', 'Target Pesticide/Fungicide:')
+                        organic_label = t.get('rec_org', 'Organic/Biological Protocol:')
+                        
+                        pest_html = f"<li><strong>{target_pest_label}</strong> <span style='color: #b91c1c; font-weight: 500;'>{selected_disease['pesticides']}</span></li>" if selected_disease["pesticides"] != "N/A" else ""
+                        org_html = f"<li><strong>{organic_label}</strong> <span style='color: #15803d; font-weight: 500;'>{selected_disease['organic']}</span></li>" if selected_disease["organic"] != "N/A" else ""
+                        
+                        # Render disease recommendations as premium visual HTML components
+                        disease_card_html = f"""
+<div class='solution-block' style='margin-top: 15px;'>
+    <h4>{t['rec_solution']}</h4>
+    <p>{sol_text}</p>
+</div>
+
+<div class='preventive-block' style='margin-top: 15px; margin-bottom: 5px;'>
+    <h4>{t['prev_measures']}</h4>
+    <ul style='padding-left: 20px; margin-bottom: 0;'>
+        {bullets}
+        <li><strong>{t['rec_fert']}</strong> <span style='color: #3c5a45; font-weight: 500;'>{selected_disease['fertilizer']}</span></li>
+        <li><strong>{t['comp_crops']}</strong> <span style='color: #3c5a45; font-weight: 500;'>{selected_disease['crops']}</span></li>
+        {pest_html}
+        {org_html}
+    </ul>
+</div>
+                        """
+                        st.markdown(disease_card_html, unsafe_allow_html=True)
+                            
+                elif enc_tab == t['enc_t2']:
+                    st.markdown(f"### {t['enc_s1_title']}")
+                    st.write(t['enc_s1_desc'])
+                    
+                    # Premium styled Soil Health Card
+                    soil_html = f"""
+<div class='preventive-block' style='margin-top: 20px;'>
+    <h4>🌱 {t['enc_t2'].upper()}</h4>
+    <ul style='padding-left: 20px; margin-bottom: 0;'>
+        <li>{t['enc_s1_b1']}</li>
+        <li>{t['enc_s1_b2']}</li>
+    </ul>
+</div>
+                    """
+                    st.markdown(soil_html, unsafe_allow_html=True)
+                    
+                else:
+                    st.markdown(f"### {t['enc_w1_title']}")
+                    
+                    # Premium styled Water Management Card
+                    water_html = f"""
+<div class='solution-block' style='margin-top: 20px;'>
+    <h4>💧 {t['enc_t3'].upper()}</h4>
+    <p>{t['enc_w1_desc']}</p>
+</div>
+                    """
+                    st.markdown(water_html, unsafe_allow_html=True)
+
+        
+        elif nav_selection == "FIELD HUB":
+            if not st.session_state.get('loc_detected', False):
+                locked_html = f"""<div class='b-main-card' style='display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 420px; background: rgba(244, 241, 235, 0.85); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.7); margin-bottom: 25px;'>
+<!-- Blurred Background Decorative Telemetry circles -->
+<div style='position: absolute; top: -50px; left: -50px; width: 200px; height: 200px; background: rgba(60, 90, 69, 0.08); border-radius: 50%; filter: blur(50px);'></div>
+<div style='position: absolute; bottom: -50px; right: -50px; width: 250px; height: 250px; background: rgba(211, 47, 47, 0.04); border-radius: 50%; filter: blur(60px);'></div>
+<div style='font-size: 4.5rem; margin-bottom: 20px; animation: pulse-lock 2s infinite; filter: drop-shadow(0 10px 15px rgba(60, 90, 69, 0.1));'>🛰️</div>
+<h1 style='font-family: Playfair Display, serif; font-size: 2.2rem; color: #2c3e2e; margin-bottom: 12px;'>{t['fh_locked_title']}</h1>
+<p style='font-family: Inter, sans-serif; font-size: 1.05rem; color: #555; max-width: 520px; line-height: 1.6; margin: 0 auto;'>{t['fh_locked_desc']}</p>
+<style>
+@keyframes pulse-lock {{
+0% {{ transform: scale(1); opacity: 0.95; }}
+50% {{ transform: scale(1.05); opacity: 1; }}
+100% {{ transform: scale(1); opacity: 0.95; }}
+}}
+</style>
+</div>"""
+                locked_html = locked_html.replace('\n', ' ').replace('\r', '')
+                st.markdown(locked_html, unsafe_allow_html=True)
+                
+                # Render interactive Streamlit button cleanly in a centered column underneath the card
+                c1, c2, c3 = st.columns([1, 1.5, 1])
+                with c2:
+                    activate_clicked = st.button(t['fh_locked_btn'], key="activate_fh_btn", type="primary")
+                    if activate_clicked:
+                        import time
+                        with st.spinner("Accessing GPS/IP Telemetry..."):
+                            time.sleep(1.0)
+                            st.session_state.loc_detected = True
+                            st.session_state.weather, st.session_state.detected_region, st.session_state.detected_area = get_weather(lang)
+                        st.rerun()
+            else:
+                detected_region = st.session_state.get('detected_region', 'Andhra Pradesh')
+                detected_area = st.session_state.get('detected_area', 'Guntur')
+            
+                # Fetch Mandi rates, threats, and community connectivity
+                mandi_rates = get_mandi_rates(lang, region=detected_region)
+                threats = get_regional_crop_threats(lang, region=detected_region)
+                contacts = get_community_connectivity(lang, region=detected_region)
+            
+                # Dynamic Localized Regional Alerts based on State with click-to-call direct support helplines
+                alerts_data = {
+                    "andhra": {
+                        "outbreak_title": {"English": "🚨 OUTBREAK ALERT", "Hindi": "🚨 प्रकोप चेतावनी", "Telugu": "🚨 తెగులు ఉధృతి హెచ్చరిక"},
+                        "outbreak_desc": {
+                            "English": "Rice Blast spores detected in adjacent blocks. Warm nights and high relative humidity (>90%) favor infection. Apply Tricyclazole preventatively.",
+                            "Hindi": "आस-पास के ब्लॉक में राइस ब्लास्ट (धान का झुलसा रोग) के बीजाणु पाए गए हैं। गर्म रातें और उच्च सापेक्ष आर्द्रता (>90%) संक्रमण के अनुकूल हैं। निवारक के रूप में ट्राइसाइक्लाजोल लगाएं।",
+                            "Telugu": "సమీప ప్రాంతాలలో వరి అగ్గి తెగులు (రైస్ బ్లాస్ట్) వ్యాప్తి కనుగొనబడింది. వెచ్చని రాత్రులు మరియు అధిక సాపేక్ష ఆర్ద్రత (>90%) తెగులు సోకడానికి అనుకూలంగా ఉంటాయి. ముందస్తు నివారణగా ట్రైసైక్లాజోల్ పిచికారీ చేయండి."
+                        },
+                        "outbreak_label": {"English": "📞 Local Expert Help desk:", "Hindi": "📞 स्थानीय विशेषज्ञ हेल्प डेस्क:", "Telugu": "📞 స్థానిక నిపుణుల సహాయ కేంద్రం:"},
+                        "outbreak_btn": {"English": "Call Dr. K. Rao", "Hindi": "डॉ. के. राव को कॉल करें", "Telugu": "డాక్టర్ కె. రావు కి కాల్ చేయి"},
+                        "outbreak_tel": "+919440123456",
+                    
+                        "pest_title": {"English": "⚠️ PEST ADVISORY", "Hindi": "⚠️ कीट सलाह", "Telugu": "⚠️ పురుగుల ఉధృతి హెచ్చరిక"},
+                        "pest_desc": {
+                            "English": "Helicoverpa armigera (Cotton bollworm) moths observed in pheromone traps. Monitor squaring cotton plants closely.",
+                            "Hindi": "फेरोमोन जाल में हेलिकोवर्पा आर्मिगेरा (कपास के डोडे की सुंडी) पतंगे देखे गए हैं। कपास के पौधों की बारीकी से निगरानी करें।",
+                            "Telugu": "ఫెరమోన్ ఉచ్చులలో పత్తి కాయతొలుచు పురుగు (కత్తెర పురుగు) కనుగొనబడింది. పత్తి మొక్కల మొగ్గ దశను నిశితంగా పరిశీలించండి."
+                        },
+                        "pest_label": {"English": "📞 Agriculture Helpline:", "Hindi": "📞 कृषि हेल्पलाइन:", "Telugu": "📞 వ్యవసాయ సహాయ కేంద్రం:"},
+                        "pest_btn": {"English": "Call Agri-Logistics", "Hindi": "एग्री-लॉजिस्टिक्स को कॉल करें", "Telugu": "అగ్రి-లాజిస్టిక్స్ కి కాల్ చేయి"},
+                        "pest_tel": "+918008123456",
+                    
+                        "market_title": {"English": "✅ MARKET INSIGHT", "Hindi": "✅ बाजार अंतर्दृष्टि", "Telugu": "✅ మార్కెట్ సమాచారం"},
+                        "market_desc": {
+                            "English": "High demand for premium Chilli varieties (Guntur Sannam/334) in wholesale export markets. Prices are trending up.",
+                            "Hindi": "थोक निर्यात बाजारों में प्रीमियम मिर्च किस्मों (गुंटूर सन्नम/334) की उच्च मांग है। कीमतें बढ़ रही हैं।",
+                            "Telugu": "హోల్‌సేల్ ఎగుమతి మార్కెట్లలో ప్రీమియం మిర్చి రకాలకు (గుంటూరు సన్నం/334) అధిక డిమాండ్ ఉంది. ధరలు పెరుగుతున్నాయి."
+                        },
+                        "market_label": {"English": "📞 Sell Crop Directly:", "Hindi": "📞 सीधे फसल बेचें:", "Telugu": "📞 పంటను నేరుగా విక్రయించండి:"},
+                        "market_btn": {"English": "Call wholesale Buyer", "Hindi": "थोक खरीदार को कॉल करें", "Telugu": "హోల్‌సేల్ కొనుగోలుదారు కి కాల్ చేయి"},
+                        "market_tel": "+917382910482"
+                    },
+                    "telangana": {
+                        "outbreak_title": {"English": "🚨 OUTBREAK ALERT", "Hindi": "🚨 प्रकोप चेतावनी", "Telugu": "🚨 తెగులు ఉధృతి హెచ్చరిక"},
+                        "outbreak_desc": {
+                            "English": "Severe infestation of Black Thrips (Thrips parvispinus) reported in local chilli fields. Avoid excess nitrogenous fertilizers.",
+                            "Hindi": "स्थानीय मिर्च के खेतों में ब्लैक थ्रिप्स (काले कीट) का गंभीर प्रकोप देखा गया है। अत्यधिक नाइट्रोजनयुक्त उर्वरकों से बचें।",
+                            "Telugu": "స్థానిక మిర్చి పొలాల్లో నల్ల తామర పురుగుల ఉధృతి తీవ్రంగా ఉంది. నత్రజని ఎరువుల వాడకాన్ని తగ్గించండి."
+                        },
+                        "outbreak_label": {"English": "📞 Expert Assistance:", "Hindi": "📞 विशेषज्ञ सहायता:", "Telugu": "📞 నిపుణుల సహాయం:"},
+                        "outbreak_btn": {"English": "Call Dr. G. Reddy", "Hindi": "डॉ. जी. रेड्डी को कॉल करें", "Telugu": "డాక్టర్ జి. రెడ్డి కి కాల్ చేయి"},
+                        "outbreak_tel": "+919848098765",
+                    
+                        "pest_title": {"English": "⚠️ WEATHER ALERT", "Hindi": "⚠️ मौसम की चेतावनी", "Telugu": "⚠️ వాతావరణ హెచ్చరిక"},
+                        "pest_desc": {
+                            "English": "Rain showers expected in 48 hours. Postpone all foliar chemical sprays on Maize crops to avoid washing off.",
+                            "Hindi": "48 घंटों में बारिश की संभावना है। रसायनों के बह जाने से बचाने के लिए मक्का की फसलों पर सभी पर्णीय छिड़काव स्थगित करें।",
+                            "Telugu": "48 గంటల్లో వర్షాలు కురిసే అవకాశం ఉంది. మొక్కజొన్న పంటలపై రసాయన పిచికారీలను వాయిదా వేయండి."
+                        },
+                        "pest_label": {"English": "📞 Logistics Helpline:", "Hindi": "📞 लॉजिस्टिक्स हेल्पलाइन:", "Telugu": "📞 రవాణా సహాయ కేంద్రం:"},
+                        "pest_btn": {"English": "Call Mandi Transport", "Hindi": "मंडी परिवहन को कॉल करें", "Telugu": "మండి రవాణా కి కాల్ చేయి"},
+                        "pest_tel": "+919000154321",
+                    
+                        "market_title": {"English": "✅ SEED DEMAND", "Hindi": "✅ बीज की मांग", "Telugu": "✅ విత్తనాల డిమాండ్"},
+                        "market_desc": {
+                            "English": "Strong local demand for Rabi Onion seeds. Subsidies announced by State Agri Department.",
+                            "Hindi": "रबी प्याज के बीजों की स्थानीय स्तर पर भारी मांग है। राज्य कृषि विभाग द्वारा सब्सिडी की घोषणा की गई है।",
+                            "Telugu": "రబీ ఉల్లి విత్తనాలకు స్థానికంగా మంచి డిమాండ్ ఉంది. రాష్ట్ర వ్యవసాయ శాఖ సబ్సిడీలను ప్రకటించింది."
+                        },
+                        "market_label": {"English": "📞 Seed Purchase:", "Hindi": "📞 बीज खरीद:", "Telugu": "📞 విత్తనాల కొనుగోలు:"},
+                        "market_btn": {"English": "Call Kakatiya Supplies", "Hindi": "काकतीय सप्लाइज को कॉल करें", "Telugu": "కాకతీయ సప్లైస్ కి కాల్ చేయి"},
+                        "market_tel": "+918888877777"
+                    },
+                    "default": {
+                        "outbreak_title": {"English": "🚨 OUTBREAK ALERT", "Hindi": "🚨 प्रकोप चेतावनी", "Telugu": "🚨 తెగులు ఉధృతి హెచ్చరిక"},
+                        "outbreak_desc": {
+                            "English": "Late Blight sightings reported in regional potato fields. Cool, wet conditions favor rapid canopy spread.",
+                            "Hindi": "क्षेत्रीय आलू के खेतों में पछेती झुलसा (लेट ब्लाइट) के लक्षण देखे गए हैं। ठंडा और गीला मौसम तेजी से फैलने में मदद करता है।",
+                            "Telugu": "ప్రాంతీయ బంగాళాదుంప పొలాల్లో లేట్ బ్లైట్ తెగులు కనుగొనబడింది. చల్లని, తడి వాతావరణం దీని వేగవంతమైన వ్యాప్తికి అనుకూలం."
+                        },
+                        "outbreak_label": {"English": "📞 Expert Helpline:", "Hindi": "📞 विशेषज्ञ हेल्पलाइन:", "Telugu": "📞 నిపుణుల సహాయ కేంద్రం:"},
+                        "outbreak_btn": {"English": "Call National Ag Helpdesk", "Hindi": "राष्ट्रीय कृषि हेल्पडेस्क को कॉल करें", "Telugu": "జాతీయ వ్యవసాయ సహాయ కేంద్రం కి కాల్ చేయి"},
+                        "outbreak_tel": "+919111122222",
+                    
+                        "pest_title": {"English": "⚠️ PEST ADVISORY", "Hindi": "⚠️ कीट सलाह", "Telugu": "⚠️ పురుగుల ఉధృతి హెచ్చరిక"},
+                        "pest_desc": {
+                            "English": "Whitefly populations building up in vegetable crops. Install yellow sticky traps.",
+                            "Hindi": "सब्जियों की फसलों में सफेद मक्खी की आबादी बढ़ रही है। पीले चिपचिपे जाल लगाएं।",
+                            "Telugu": "కూరగాయల పంటలలో తెల్లదోమ ఉధృతి పెరుగుతోంది. పసుపు జిగురు అట్టలను అమర్చండి."
+                        },
+                        "pest_label": {"English": "📞 Bio-Control Agent:", "Hindi": "📞 जैविक नियंत्रण एजेंट:", "Telugu": "📞 జీవ నియంత్రణ ఏజెంట్:"},
+                        "pest_btn": {"English": "Call Seed Emporium", "Hindi": "सीड एम्पोरियम को कॉल करें", "Telugu": "సీడ్ ఎంపోరియం కి కాల్ చేయి"},
+                        "pest_tel": "+919333344444",
+                    
+                        "market_title": {"English": "✅ MARKET DECENTRALIZATION", "Hindi": "✅ बाजार विकेंद्रीकरण", "Telugu": "✅ మార్కెట్ వికేంద్రీకరణ"},
+                        "market_desc": {
+                            "English": "Digital e-NAM bidding active in nearby mandis. Fast clearances and next-day payments.",
+                            "Hindi": "नजदीकी मंडियों में डिजिटल ई-नाम (e-NAM) बोली सक्रिय है। त्वरित मंजूरी और अगले दिन भुगतान।",
+                            "Telugu": "సమీప మండిలలో డిజిటల్ ఈ-నామ్ (e-NAM) వేలం ప్రారంభమైంది. వేగవంతమైన చెల్లింపులు మరియు త్వరిత క్లియరెన్స్."
+                        },
+                        "market_label": {"English": "📞 Sell Crop Directly:", "Hindi": "📞 सीधे फसल बेचें:", "Telugu": "📞 పంటను నేరుగా విక్రయించండి:"},
+                        "market_btn": {"English": "Call Metro Wholesalers", "Hindi": "मेट्रो थोक विक्रेताओं को कॉल करें", "Telugu": "మెట్రో హోల్‌సేలర్స్ కి కాల్ చేయి"},
+                        "market_tel": "+917444455555"
+                    }
+                }
+            
+                if "andhra" in detected_region.lower() or "guntur" in detected_region.lower():
+                    ad = alerts_data["andhra"]
+                elif "telangana" in detected_region.lower():
+                    ad = alerts_data["telangana"]
+                else:
+                    ad = alerts_data["default"]
+            
+                alert_html = f"""<div style='background: #fff0f0; border-left: 4px solid #d32f2f; padding: 18px 20px; border-radius: 12px; color: #d32f2f; margin-bottom: 15px; font-family: Inter, sans-serif; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(211,47,47,0.05);'>
+    <div style='font-weight: 800; font-size: 1rem; margin-bottom: 6px;'>{ad['outbreak_title'].get(lang, ad['outbreak_title']['English'])} ({detected_area}):</div>
+    {ad['outbreak_desc'].get(lang, ad['outbreak_desc']['English'])}
+    <div style='margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(211,47,47,0.15); display: flex; align-items: center; justify-content: space-between;'>
+    <span style='font-size: 0.85rem; font-weight: 700;'>{ad['outbreak_label'].get(lang, ad['outbreak_label']['English'])}</span>
+    <a href='tel:{ad['outbreak_tel']}' style='background: #d32f2f; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: none;'>{ad['outbreak_btn'].get(lang, ad['outbreak_btn']['English'])}</a>
+    </div>
+    </div>
+    <div style='background: #fffbeb; border-left: 4px solid #f59e0b; padding: 18px 20px; border-radius: 12px; color: #b45309; margin-bottom: 15px; font-family: Inter, sans-serif; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(245,158,11,0.05);'>
+    <div style='font-weight: 800; font-size: 1rem; margin-bottom: 6px;'>{ad['pest_title'].get(lang, ad['pest_title']['English'])}:</div>
+    {ad['pest_desc'].get(lang, ad['pest_desc']['English'])}
+    <div style='margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(245,158,11,0.15); display: flex; align-items: center; justify-content: space-between;'>
+    <span style='font-size: 0.85rem; font-weight: 700;'>{ad['pest_label'].get(lang, ad['pest_label']['English'])}</span>
+    <a href='tel:{ad['pest_tel']}' style='background: #f59e0b; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: none;'>{ad['pest_btn'].get(lang, ad['pest_btn']['English'])}</a>
+    </div>
+    </div>
+    <div style='background: #f0fdf4; border-left: 4px solid #10b981; padding: 18px 20px; border-radius: 12px; color: #166534; margin-bottom: 30px; font-family: Inter, sans-serif; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(16,185,129,0.05);'>
+    <div style='font-weight: 800; font-size: 1rem; margin-bottom: 6px;'>{ad['market_title'].get(lang, ad['market_title']['English'])}:</div>
+    {ad['market_desc'].get(lang, ad['market_desc']['English'])}
+    <div style='margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(16,185,129,0.15); display: flex; align-items: center; justify-content: space-between;'>
+    <span style='font-size: 0.85rem; font-weight: 700;'>{ad['market_label'].get(lang, ad['market_label']['English'])}</span>
+    <a href='tel:{ad['market_tel']}' style='background: #10b981; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: none;'>{ad['market_btn'].get(lang, ad['market_btn']['English'])}</a>
+    </div>
+    </div>"""
+                alert_html = alert_html.replace("\n", " ").replace("\r", "")
+            
+                # Render threats table rows
+                threat_rows = ""
+                for threat in threats:
+                    if threat['severity'] == "high":
+                        sev_badge = f"<span style='background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block;'>{t['severity_high']}</span>"
+                    elif threat['severity'] == "medium":
+                        sev_badge = f"<span style='background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block;'>{t['severity_medium']}</span>"
+                    else:
+                        sev_badge = f"<span style='background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block;'>{t['severity_low']}</span>"
+                    
+                    threat_rows += f"""<tr style='border-bottom: 1px solid #f0f0f0;'>
+    <td style='padding: 15px; font-weight: 700; color: #2c3e2e;'>{threat['crop']}</td>
+    <td style='padding: 15px; color: #b91c1c; font-weight: 600;'>{threat['disease']}</td>
+    <td style='padding: 15px;'>{sev_badge}</td>
+    <td style='padding: 15px; font-size: 0.85rem; color: #4a4a4a;'>{threat['action']}</td>
+    </tr>"""
+                threat_rows = threat_rows.replace("\n", " ").replace("\r", "")
+
+                threats_table = f"""<div style='background: white; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 35px;'>
+    <table style='width: 100%; border-collapse: collapse; text-align: left; font-family: Inter, sans-serif;'>
+    <thead>
+    <tr style='background: #eef2ed; border-bottom: 2px solid #d1ded3; font-size: 0.70rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05rem; color: #3c5a45;'>
+    <th style='padding: 15px;'>{t['fh_crop_col']}</th>
+    <th style='padding: 15px;'>{t['fh_disease_col']}</th>
+    <th style='padding: 15px;'>{t['fh_severity_col']}</th>
+    <th style='padding: 15px;'>{t['fh_action_col']}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {threat_rows}
+    </tbody>
+    </table>
+    </div>"""
+                threats_table = threats_table.replace("\n", " ").replace("\r", "")
+
+                # Mandi Rates Cards
+                mandi_cards = ""
+                for item in mandi_rates:
+                    trend_color = "#10b981" if item['trend'] == "up" else ("#d32f2f" if item['trend'] == "down" else "#f59e0b")
+                    trend_icon = "↑" if item['trend'] == "up" else ("↓" if item['trend'] == "down" else "→")
+                    mandi_cards += f"""<div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 285px; margin-bottom: 15px;'>
+    <div style='font-size: 0.70rem; color: #888; font-family: Inter, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{item['market']}</div>
+    <div style='font-size: 1.6rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif; margin: 5px 0;'>{item['crop']}</div>
+    <div style='display: flex; align-items: baseline; gap: 10px;'>
+    <div style='font-size: 1.3rem; color: #4a4a4a; font-weight: 700;'>{item['rate']}</div>
+    <div style='font-size: 0.85rem; color: {trend_color}; font-weight: 600;'>{item['trend_val']} {trend_icon}</div>
+    </div>
+    <div style='margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;'>
+    <div style='font-size: 0.8rem; color: #666; margin-bottom: 6px;'><strong>📍 {t['mandi_loc']}</strong> {item['location']}</div>
+    <div style='font-size: 0.8rem; color: #666; margin-bottom: 6px;'><strong>👤 {t['mandi_dealer']}</strong> {item['dealer']}</div>
+    <div style='font-size: 0.85rem; color: #3c5a45; font-weight: 600;'><strong>📞 {t['mandi_contact']}</strong> <a href='tel:{item['contact'].replace(" ", "")}' style='color: #3c5a45; text-decoration: none; font-weight: 700;'>{item['contact']}</a></div>
+    </div>
+    </div>"""
+                mandi_cards = mandi_cards.replace("\n", " ").replace("\r", "")
+
+                # Community Connectivity Cards
+                conn_cards = ""
+                for c in contacts:
+                    role_lbl = t.get(c['role_key'], c['role_key'].replace("role_", "").title())
+                    conn_cards += f"""<div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 285px; margin-bottom: 15px;'>
+    <div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px;'>
+    <div style='background: #e8ede9; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #3c5a45;'>👤</div>
+    <div>
+    <div style='font-size: 0.65rem; color: #888; font-family: Inter, sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05rem;'>{role_lbl}</div>
+    <div style='font-size: 0.95rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif;'>{c['name']}</div>
+    </div>
+    </div>
+    <div style='font-size: 0.8rem; color: #666; margin-bottom: 15px; min-height: 32px;'>
+    <strong>🏷️ Speciality:</strong> {c['spec']}
+    </div>
+    <div style='padding-top: 15px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;'>
+    <a href='tel:{c['contact'].replace(" ", "")}' style='display: flex; align-items: center; gap: 6px; background: #e8ede9; color: #3c5a45; padding: 6px 12px; border-radius: 12px; text-decoration: none; font-size: 0.8rem; font-weight: 700;'>
+    📞 {c['contact']}
+    </a>
+    <a href='https://wa.me/{c['contact'].replace(" ", "").replace("+", "")}' target='_blank' style='display: inline-block; background: #25d366; color: white; padding: 6px 12px; border-radius: 12px; text-decoration: none; font-size: 0.75rem; font-weight: 700;'>
+    WhatsApp
+    </a>
+    </div>
+    </div>"""
+                conn_cards = conn_cards.replace("\n", " ").replace("\r", "")
+
+                fh_content = f"""<div class='b-main-card'>
+    <h2 class='result-title'>{t['fh_title']} ({detected_region.upper()})</h2>
+
+    <!-- Soil Telemetry -->
+    <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_soil']}</h4>
+    <div style='display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 35px;'>
+    <div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 180px;'>
+    <div style='font-size: 0.75rem; color: #888; font-family: Inter, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['fh_s1_l']}</div>
+    <div style='font-size: 2.2rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif; margin: 5px 0;'>42%</div>
+    <div style='font-size: 0.85rem; color: #d32f2f; font-weight: 600;'>-5% ↓</div>
+    </div>
+    <div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 180px;'>
+    <div style='font-size: 0.75rem; color: #888; font-family: Inter, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['fh_s2_l']}</div>
+    <div style='font-size: 2.2rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif; margin: 5px 0;'>28°C</div>
+    <div style='font-size: 0.85rem; color: #10b981; font-weight: 600;'>+2°C ↑</div>
+    </div>
+    <div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 180px;'>
+    <div style='font-size: 0.75rem; color: #888; font-family: Inter, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['fh_s3_l']}</div>
+    <div style='font-size: 2.2rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif; margin: 5px 0;'>{t['fh_s3_v']}</div>
+    <div style='font-size: 0.85rem; color: #10b981; font-weight: 600;'>{t['fh_s3_d']}</div>
+    </div>
+    </div>
+
+    <!-- Regional Alerts -->
+    <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_alerts']}</h4>
+    {alert_html}
+
+    <!-- Regional Crops and Diseases -->
+    <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_regional_crops']}</h4>
+    {threats_table}
+
+    <!-- Crop Markets Mandi Rates -->
+    <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t.get('fh_mandi_title', 'REAL-TIME MANDI RATES')}</h4>
+    <div style='display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 35px;'>
+    {mandi_cards}
+    </div>
+
+    <!-- Market Community Connectivity -->
+    <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_community_connectivity']}</h4>
+    <p style='font-family: Inter, sans-serif; font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5;'>{t['fh_conn_desc']}</p>
+    <div style='display: flex; gap: 20px; flex-wrap: wrap;'>
+    {conn_cards}
+    </div>
+
+    </div>"""
+                fh_content = fh_content.replace("\n", " ").replace("\r", "")
+                st.markdown(fh_content, unsafe_allow_html=True)
+        
+        elif nav_selection == "DOCTOR AI":
+            user_input = st.text_input(t['doc_placeholder'], placeholder=t['doc_placeholder'], key="doc_ai_input")
+        
+            chat_html = f"""
+<div style='background: #f0fdf4; padding: 18px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #bbf7d0; font-family: Inter, sans-serif; font-size: 0.95rem; color: #166534; box-shadow: 0 4px 10px rgba(22, 101, 52, 0.05);'>
+{t['doc_greeting']}
+</div>
+"""
+            if user_input:
+                chat_html += f"""
+<div style='background: #ffffff; padding: 18px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #e0e0e0; text-align: right; font-family: Inter, sans-serif; font-size: 0.95rem; color: #2c3e2e; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-left: 20%;'>
+<strong>{t['doc_you']}</strong><br>{user_input}
+</div>
+<div style='background: #f0fdf4; padding: 18px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #bbf7d0; font-family: Inter, sans-serif; font-size: 0.95rem; color: #166534; box-shadow: 0 4px 10px rgba(22, 101, 52, 0.05); margin-right: 20%;'>
+<strong>DOCTOR AI:</strong><br>{t['doc_response']}
+</div>
+"""
+        
+            st.markdown(f"""
+<div class='b-main-card'>
+<h2 class='result-title'>{t['doc_title']}</h2>
+{chat_html}
+</div>
+""", unsafe_allow_html=True)
+    
+        elif nav_selection == "SCHEMES":
+            st.markdown(f"<h2 class='result-title' style='margin-bottom: 15px;'>{t['sch_title']}</h2>", unsafe_allow_html=True)
+            
+            # Category toggle
+            sch_cat = st.pills("Category", [t['sch_central'], t['sch_state']], default=t['sch_central'], label_visibility="collapsed")
+            
+            # Prepare scheme options based on category
+            scheme_data = []
+            if sch_cat == t['sch_central']:
+                for i in range(1, 10):
+                    if f"sch_s{i}_title" in t:
+                        scheme_data.append({
+                            "title": t[f"sch_s{i}_title"],
+                            "desc": t[f"sch_s{i}_desc"],
+                            "ben": t[f"sch_s{i}_ben"],
+                            "link": t[f"sch_s{i}_link"]
+                        })
+            else:
+                # Detect state to show relevant schemes
+                detected_state = st.session_state.get('detected_region', 'Andhra Pradesh')
+                
+                # Real-time indicator
+                st.markdown(f"""
+                <div style='display: flex; align-items: center; gap: 10px; margin: 10px 0 20px 0; background: #f0f9ff; padding: 10px 18px; border-radius: 50px; border: 1px solid #bae6fd;'>
+                    <span class='pulse-blue' style='width: 10px; height: 10px; background: #0ea5e9; border-radius: 50%; display: inline-block;'></span>
+                    <span style='font-size: 0.75rem; color: #0369a1; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>Live Region: {detected_state}</span>
+                </div>
+                <style>
+                .pulse-blue {{
+                    animation: pulse-blue 2s infinite;
+                }}
+                @keyframes pulse-blue {{
+                    0% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }}
+                    70% {{ transform: scale(1); box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }}
+                    100% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }}
+                }}
+                </style>
+                """, unsafe_allow_html=True)
+                
+                prefix = "ap" if "Andhra" in detected_state else "ts"
+                for i in range(1, 5):
+                    if f"sch_{prefix}{i}_title" in t:
+                         scheme_data.append({
+                            "title": t[f"sch_{prefix}{i}_title"],
+                            "desc": t[f"sch_{prefix}{i}_desc"],
+                            "ben": t[f"sch_{prefix}{i}_ben"],
+                            "link": t[f"sch_{prefix}{i}_link"]
+                        })
+                
+            if scheme_data:
+                titles = [s['title'] for s in scheme_data]
+                selected_title = st.selectbox("Select a Scheme", titles, label_visibility="collapsed")
+                selected_scheme = next(s for s in scheme_data if s['title'] == selected_title)
+                
+                st.markdown(f"""
+    <div class='b-main-card' style='margin-top: 20px;'>
+        <h3 style='margin: 0 0 15px 0; font-size: 1.8rem; color: #2c3e2e; font-family: Playfair Display, serif;'>{selected_scheme['title']}</h3>
+        <p style='font-size: 1.1rem; line-height: 1.6; color: #4a4a4a; margin-bottom: 20px; font-family: Inter, sans-serif;'>{selected_scheme['desc']}</p>
+        <div style='background: #f0fdf4; padding: 20px; border-radius: 12px; border: 1px solid #dcfce7;'>
+            <h4 style='margin: 0 0 10px 0; color: #166534; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05rem;'>✅ Key Benefits</h4>
+            <p style='font-size: 1rem; color: #166534; margin: 0; line-height: 1.5;'>{selected_scheme['ben']}</p>
+        </div>
+        <div style='margin-top: 35px; text-align: center;'>
+            <a href='{selected_scheme['link']}' target='_blank' style='display: inline-block; background: #3c5a45; color: white; padding: 14px 40px; border-radius: 50px; text-decoration: none; font-family: Inter, sans-serif; font-weight: 700; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(60, 90, 69, 0.2); letter-spacing: 0.05rem;'>
+                🚀 {t['sch_apply']}
+            </a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+        
+        elif nav_selection == "HISTORY":
+            if len(st.session_state.history) == 0:
+                history_html = f"<div style='background: #e8ede9; padding: 20px; border-radius: 16px; color: #3c5a45; font-family: Inter, sans-serif; text-align: center; font-weight: 500;'>{t['hist_empty']}</div>"
+            else:
+                history_html = ""
+                for item in reversed(st.session_state.history):
+                    disease_en = item.get('disease_en', item.get('disease', 'Healthy'))
+                    conf = item.get('confidence', '0.00%')
+                    timestamp = item.get('timestamp', '')
+                    disease_translated, _, _, fertilizer, _, _ = get_recommendations(disease_en, lang)
+                    history_html += f"""
+    <div class='preventive-block' style='display: flex; justify-content: space-between; align-items: center; padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);'>
+    <div>
+    <h3 style='margin: 0 0 8px 0; font-size: 1.3rem; font-family: Playfair Display, serif; color: #2c3e2e;'>{disease_translated}</h3>
+    <span class='pill-light' style='margin-right: 10px;'>{t['hist_conf']} {conf}</span>
+    <span style='font-size: 0.85rem; color: #666; font-family: Inter, sans-serif;'>{t['hist_fert']} <strong style='color: #3c5a45;'>{fertilizer}</strong></span>
+    </div>
+    <div style='color: #aaa; font-size: 0.8rem; font-family: Inter, sans-serif;'>{timestamp}</div>
+    </div>
+    """
+                st.markdown(f"""
+    <div class='b-main-card'>
+    <h2 class='result-title'>{t['hist_title']}</h2>
+    {history_html}
+    </div>
+    """, unsafe_allow_html=True)
