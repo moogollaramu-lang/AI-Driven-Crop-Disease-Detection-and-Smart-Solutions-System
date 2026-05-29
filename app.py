@@ -319,18 +319,7 @@ with col_left:
 </div>
 """, unsafe_allow_html=True)
         
-        # Handle imports for the rear camera library safely
-        try:
-            from streamlit_back_camera_input import back_camera_input
-            has_back_camera = True
-        except ImportError:
-            has_back_camera = False
-
-        options = ["Upload File", "Front Camera"]
-        if has_back_camera:
-            options.append("Rear Camera")
-
-        input_type = st.radio("Choose Input Method", options, horizontal=True, label_visibility="collapsed")
+        input_type = st.radio("Choose Input Method", ["Upload File", "Camera (Front)", "Camera (Rear)"], horizontal=True, label_visibility="collapsed")
         
         image = None
         if input_type == "Upload File":
@@ -338,16 +327,20 @@ with col_left:
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
                 st.image(image, width='stretch', caption="Main Specimen")
-        elif input_type == "Front Camera":
+        elif input_type == "Camera (Front)":
             camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
             if camera_file is not None:
                 image = Image.open(camera_file)
                 st.image(image, width='stretch', caption="Main Specimen")
-        elif input_type == "Rear Camera":
-            back_file = back_camera_input(button_text="Capture Specimen (Rear Camera)")
-            if back_file is not None:
-                image = Image.open(back_file)
-                st.image(image, width='stretch', caption="Main Specimen")
+        else:
+            try:
+                from streamlit_back_camera_input import back_camera_input
+                rear_camera_file = back_camera_input()
+                if rear_camera_file is not None:
+                    image = Image.open(rear_camera_file)
+                    st.image(image, width='stretch', caption="Main Specimen")
+            except Exception as e:
+                st.error("Error loading rear camera component. Please make sure the browser has camera permissions granted.")
     
 
 
