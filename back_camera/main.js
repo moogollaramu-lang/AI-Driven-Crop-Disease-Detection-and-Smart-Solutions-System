@@ -31,6 +31,26 @@ function onRender(event) {
       });
 
     function takePicture() {
+      // Trigger shutter flash animation
+      let flash = document.getElementById('flash-effect');
+      if (flash) {
+        flash.classList.remove('fade-out');
+        flash.classList.add('flash');
+        setTimeout(() => {
+          flash.classList.remove('flash');
+          flash.classList.add('fade-out');
+        }, 50);
+      }
+      
+      // Trigger temporary captured notification toast
+      let status = document.getElementById('capture-status');
+      if (status) {
+        status.classList.add('show');
+        setTimeout(() => {
+          status.classList.remove('show');
+        }, 2000);
+      }
+
       let context = canvas.getContext('2d');
       // Capture at video native resolution for clarity
       const w = video.videoWidth || 640;

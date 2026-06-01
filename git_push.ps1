@@ -42,7 +42,7 @@ Write-Host ">>> Adding all project files (respecting .gitignore)..."
 & $git add .
 
 Write-Host ">>> Committing files..."
-& $git commit -m "Upload all project files including ML model weights"
+& $git commit -m "Implement camera stay-on continuous stream, live feed indicator, shutter flash feedback, and input type state resets"
 
 Write-Host ">>> Pushing to GitHub (this may take a moment for the 44.8MB model)..."
 & $git push -f origin main

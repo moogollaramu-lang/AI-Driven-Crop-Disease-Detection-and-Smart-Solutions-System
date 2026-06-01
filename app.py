@@ -333,6 +333,18 @@ with col_left:
         
         input_type = st.radio("Choose Input Method", ["Upload File", "Camera (Front)", "Camera (Rear)"], horizontal=True, label_visibility="collapsed")
         
+        # Reset camera states if input type changes to prevent stale data analysis
+        if "prev_input_type" not in st.session_state:
+            st.session_state.prev_input_type = input_type
+        elif st.session_state.prev_input_type != input_type:
+            st.session_state.prev_input_type = input_type
+            if "rear_captured_image" in st.session_state:
+                st.session_state.rear_captured_image = None
+            if "current_analysis" in st.session_state:
+                del st.session_state.current_analysis
+            if "last_file" in st.session_state:
+                del st.session_state.last_file
+        
         if input_type != "Upload File":
             st.markdown(f"""
             <div style='background: #f0fdf4; border-radius: 12px; padding: 15px; border: 1px solid #bbf7d0; margin-bottom: 15px;'>
@@ -377,34 +389,27 @@ with col_left:
                 component_dir = os.path.join(parent_dir, "back_camera")
                 local_back_camera_input = components.declare_component("local_back_camera_input", path=component_dir)
                 
-                # Check if we already have a captured image in session state
-                if "rear_captured_image" in st.session_state and st.session_state.rear_captured_image is not None:
-                    image = st.session_state.rear_captured_image
-                    st.image(image, use_container_width=True, caption="Main Specimen (Rear)")
+                # Always render the live back camera stream ("stay on")
+                rear_camera_file = local_back_camera_input(height=350, width=450, key="rear_camera_component")
+                if rear_camera_file:
+                    if isinstance(rear_camera_file, str) and (rear_camera_file.startswith("data:image") or "," in rear_camera_file):
+                        import base64
+                        import io
+                        base64_data = rear_camera_file.split(",")[1] if "," in rear_camera_file else rear_camera_file
+                        img_bytes = base64.b64decode(base64_data)
+                        image = Image.open(io.BytesIO(img_bytes))
+                    elif isinstance(rear_camera_file, bytes):
+                        import io
+                        image = Image.open(io.BytesIO(rear_camera_file))
+                    else:
+                        image = Image.open(rear_camera_file)
                     
-                    if st.button("🔄 Retake Photo", key="retake_rear"):
-                        st.session_state.rear_captured_image = None
-                        st.session_state.last_file = None
-                        if "current_analysis" in st.session_state:
-                            del st.session_state.current_analysis
-                        st.rerun()
-                else:
-                    rear_camera_file = local_back_camera_input(height=350, width=450)
-                    if rear_camera_file:
-                        if isinstance(rear_camera_file, str) and (rear_camera_file.startswith("data:image") or "," in rear_camera_file):
-                            import base64
-                            import io
-                            base64_data = rear_camera_file.split(",")[1] if "," in rear_camera_file else rear_camera_file
-                            img_bytes = base64.b64decode(base64_data)
-                            image = Image.open(io.BytesIO(img_bytes))
-                        elif isinstance(rear_camera_file, bytes):
-                            import io
-                            image = Image.open(io.BytesIO(rear_camera_file))
-                        else:
-                            image = Image.open(rear_camera_file)
-                        
-                        st.session_state.rear_captured_image = image
-                        st.rerun()
+                    st.session_state.rear_captured_image = image
+                
+                # If an image has been captured, display it below the live camera feed
+                if "rear_captured_image" in st.session_state and st.session_state.rear_captured_image is not None:
+                    st.image(st.session_state.rear_captured_image, use_container_width=True, caption="Main Specimen (Rear)")
+                    image = st.session_state.rear_captured_image
             except Exception as e:
                 st.error(f"Error loading rear camera component: {e}")
     
