@@ -323,18 +323,25 @@ with col_left:
         
         image = None
         if input_type == "Upload File":
-            uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
+            uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed", key="file_uploader")
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
+                st.image(image, width='stretch', caption="Main Specimen")
+                
+                # Premium "Clear photo" button matching camera input behavior
+                if st.button("❌ Clear photo", key="clear_file_btn", use_container_width=True):
+                    if "file_uploader" in st.session_state:
+                        del st.session_state["file_uploader"]
+                    if "current_analysis" in st.session_state:
+                        del st.session_state["current_analysis"]
+                    if "last_file" in st.session_state:
+                        del st.session_state["last_file"]
+                    st.rerun()
         else:
             camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
             if camera_file is not None:
                 image = Image.open(camera_file)
-                
-    # Display uploaded or captured image under the upload box
-    if image is not None:
-        st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
-        st.image(image, use_container_width=True, caption="Main Specimen")
+                st.image(image, width='stretch', caption="Main Specimen")
     
 
 
