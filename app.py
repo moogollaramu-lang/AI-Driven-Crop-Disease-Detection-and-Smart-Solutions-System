@@ -326,18 +326,12 @@ with col_left:
             uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
+                st.image(image, use_container_width=True, caption="Main Specimen")
         else:
             camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
             if camera_file is not None:
                 image = Image.open(camera_file)
-                
-    # Center-aligned, responsive Image Preview Section (BELOW the upload section!)
-    if image is not None:
-        st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
-        preview_container = st.container(border=True)
-        with preview_container:
-            st.markdown(f"<div style='text-align: center; font-family: Playfair Display, serif; font-size: 1.1rem; color: #2c3e2e; margin-bottom: 10px; font-weight: 600;'>{t.get('uploaded_leaf_image', 'Uploaded Leaf Image')}</div>", unsafe_allow_html=True)
-            st.image(image, use_container_width=True)
+                st.image(image, use_container_width=True, caption="Main Specimen")
     
 
 
@@ -418,7 +412,12 @@ with col_left:
 <span class='pill-dark'>{t['crop']}: {crop_name.upper()}</span>
 <span style='font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['ai_id']} ({confidence:.1f}%)</span>
 </div>
+""", unsafe_allow_html=True)
 
+                # Leaf Image Preview in Results Card
+                st.image(image, use_container_width=True, caption="Uploaded Specimen")
+
+                st.markdown(f"""
 <h1 class='result-title'>{disease_translated}</h1>
 
 <!-- Internal Fake Tabs -->
