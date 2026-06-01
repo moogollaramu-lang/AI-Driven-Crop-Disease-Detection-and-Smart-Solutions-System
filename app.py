@@ -326,12 +326,12 @@ with col_left:
             uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
-                st.image(image, width='stretch', caption="Main Specimen")
+                st.image(image, use_container_width=True, caption="Main Specimen")
         else:
             camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
             if camera_file is not None:
                 image = Image.open(camera_file)
-                st.image(image, width='stretch', caption="Main Specimen")
+                st.image(image, use_container_width=True, caption="Main Specimen")
     
 
 
@@ -376,9 +376,17 @@ with col_left:
             # Render from session state
             analysis = st.session_state.current_analysis
             
+            # Convert uploaded PIL image to base64 for display in results card
+            import io
+            buffered = io.BytesIO()
+            image.convert("RGB").save(buffered, format="JPEG")
+            img_base64 = base64.b64encode(buffered.getvalue()).decode()
+            img_html = f'<img src="data:image/jpeg;base64,{img_base64}" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 15px rgba(0,0,0,0.03);" />'
+            
             if not analysis["valid"]:
                 st.markdown(f"""
 <div class='b-main-card'>
+{img_html}
 <span class='pill-red'>{t['invalid']}</span>
 <h1 class='result-title'>{t['invalid_title']}</h1>
 <div class='solution-block'>
@@ -404,6 +412,7 @@ with col_left:
                 
                 st.markdown(f"""
 <div class='b-main-card'>
+{img_html}
 <div style='margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;'>
 {status_pill}
 <span class='action-btn' style='margin: 0;'>{t['download']}</span>
