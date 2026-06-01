@@ -49,6 +49,18 @@ svg[class*="streamlit"] {{ display: none !important; }}
 [data-testid="stLogo"] {{ display: none !important; }}
 div[data-testid="stDecoration"] {{ display: none !important; }}
 div[data-testid="stStatusWidget"] {{ display: none !important; }}
+
+/* Premium Styled Specimen Image Preview */
+[data-testid="stImage"] img {{
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    margin-top: 12px !important;
+    transition: transform 0.3s ease !important;
+}}
+[data-testid="stImage"] img:hover {{
+    transform: scale(1.02);
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -412,12 +424,7 @@ with col_left:
 <span class='pill-dark'>{t['crop']}: {crop_name.upper()}</span>
 <span style='font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['ai_id']} ({confidence:.1f}%)</span>
 </div>
-""", unsafe_allow_html=True)
 
-                # Leaf Image Preview in Results Card
-                st.image(image, use_container_width=True, caption="Uploaded Specimen")
-
-                st.markdown(f"""
 <h1 class='result-title'>{disease_translated}</h1>
 
 <!-- Internal Fake Tabs -->
