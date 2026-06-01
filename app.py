@@ -344,6 +344,7 @@ with col_left:
                     Please allow browser camera permissions when prompted. If the camera doesn't start:
                     <br>• Tap the <strong>lock icon 🔒</strong> in your browser's address bar.
                     <br>• Set <strong>Camera</strong> permission to <strong>"Allow"</strong> and refresh.
+                    <br>• 💡 <strong>Pro-Tip for Rear Camera:</strong> You can also choose <strong>"Upload File"</strong>, tap browse, and select <strong>"Camera"</strong>. This opens your phone's native camera app with full zoom and autofocus support!
                 </p>
             </div>
             <style>
@@ -372,7 +373,8 @@ with col_left:
         else:
             try:
                 from streamlit_back_camera_input import back_camera_input
-                rear_camera_file = back_camera_input()
+                st.markdown("<p style='font-size: 0.8rem; color: #666; margin-bottom: 5px; font-family: Inter, sans-serif;'>Tap the button inside the panel below to capture a rear camera snapshot:</p>", unsafe_allow_html=True)
+                rear_camera_file = back_camera_input(key="rear_camera_specimen")
                 if rear_camera_file is not None:
                     image = Image.open(rear_camera_file)
                     st.image(image, use_container_width=True, caption="Main Specimen")
