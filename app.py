@@ -49,13 +49,6 @@ svg[class*="streamlit"] {{ display: none !important; }}
 [data-testid="stLogo"] {{ display: none !important; }}
 div[data-testid="stDecoration"] {{ display: none !important; }}
 div[data-testid="stStatusWidget"] {{ display: none !important; }}
-
-/* Styled uploaded images and camera frames */
-[data-testid="stImage"] img {{
-    border-radius: 16px !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
-    border: 1px solid rgba(0,0,0,0.05) !important;
-}}
 </style>
 """, unsafe_allow_html=True)
 
