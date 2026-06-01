@@ -344,7 +344,6 @@ with col_left:
                     Please allow browser camera permissions when prompted. If the camera doesn't start:
                     <br>• Tap the <strong>lock icon 🔒</strong> in your browser's address bar.
                     <br>• Set <strong>Camera</strong> permission to <strong>"Allow"</strong> and refresh.
-                    <br>• 💡 <strong>Pro-Tip for Rear Camera:</strong> You can also choose <strong>"Upload File"</strong>, tap browse, and select <strong>"Camera"</strong>. This opens your phone's native camera app with full zoom and autofocus support!
                 </p>
             </div>
             <style>
@@ -373,13 +372,22 @@ with col_left:
         else:
             try:
                 from streamlit_back_camera_input import back_camera_input
-                st.markdown("<p style='font-size: 0.8rem; color: #666; margin-bottom: 5px; font-family: Inter, sans-serif;'>Tap the button inside the panel below to capture a rear camera snapshot:</p>", unsafe_allow_html=True)
-                rear_camera_file = back_camera_input(key="rear_camera_specimen")
-                if rear_camera_file is not None:
-                    image = Image.open(rear_camera_file)
+                rear_camera_file = back_camera_input()
+                if rear_camera_file:
+                    if isinstance(rear_camera_file, str) and (rear_camera_file.startswith("data:image") or "," in rear_camera_file):
+                        import base64
+                        import io
+                        base64_data = rear_camera_file.split(",")[1] if "," in rear_camera_file else rear_camera_file
+                        img_bytes = base64.b64decode(base64_data)
+                        image = Image.open(io.BytesIO(img_bytes))
+                    elif isinstance(rear_camera_file, bytes):
+                        import io
+                        image = Image.open(io.BytesIO(rear_camera_file))
+                    else:
+                        image = Image.open(rear_camera_file)
                     st.image(image, use_container_width=True, caption="Main Specimen")
             except Exception as e:
-                st.error("Error loading rear camera component. Please make sure the browser has camera permissions granted.")
+                st.error(f"Error loading rear camera component: {e}")
     
 
 
@@ -403,7 +411,9 @@ with col_left:
             elif input_type == "Camera (Front)":
                 file_identifier = f"camera_{camera_file.size}_{hash(camera_file.getvalue())}"
             else:
-                file_identifier = f"rear_camera_{rear_camera_file.size}_{hash(rear_camera_file.getvalue())}"
+                file_len = len(rear_camera_file) if isinstance(rear_camera_file, str) else getattr(rear_camera_file, "size", 0)
+                file_hash = hash(rear_camera_file) if isinstance(rear_camera_file, str) else hash(getattr(rear_camera_file, "getvalue", lambda: 0)())
+                file_identifier = f"rear_camera_{file_len}_{file_hash}"
             
             if "current_analysis" not in st.session_state or st.session_state.get("last_file") != file_identifier:
                 with st.spinner("Processing Specimen Data..."):
