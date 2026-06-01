@@ -365,10 +365,43 @@ with col_left:
                 image = Image.open(uploaded_file)
                 st.image(image, use_container_width=True, caption="Main Specimen")
         elif input_type == "Camera (Front)":
-            camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
-            if camera_file is not None:
-                image = Image.open(camera_file)
-                st.image(image, use_container_width=True, caption="Main Specimen")
+            try:
+                import streamlit.components.v1 as components
+                import os
+                parent_dir = os.path.dirname(os.path.abspath(__file__))
+                component_dir = os.path.join(parent_dir, "back_camera")
+                local_front_camera_input = components.declare_component("local_front_camera_input", path=component_dir)
+                
+                # Check if we already have a captured image in session state
+                if "front_captured_image" in st.session_state and st.session_state.front_captured_image is not None:
+                    image = st.session_state.front_captured_image
+                    st.image(image, use_container_width=True, caption="Main Specimen (Front)")
+                    
+                    if st.button("🔄 Retake Photo", key="retake_front"):
+                        st.session_state.front_captured_image = None
+                        st.session_state.last_file = None
+                        if "current_analysis" in st.session_state:
+                            del st.session_state.current_analysis
+                        st.rerun()
+                else:
+                    front_camera_file = local_front_camera_input(height=350, width=450, facingMode="user", key="front_camera_widget")
+                    if front_camera_file:
+                        if isinstance(front_camera_file, str) and (front_camera_file.startswith("data:image") or "," in front_camera_file):
+                            import base64
+                            import io
+                            base64_data = front_camera_file.split(",")[1] if "," in front_camera_file else front_camera_file
+                            img_bytes = base64.b64decode(base64_data)
+                            image = Image.open(io.BytesIO(img_bytes))
+                        elif isinstance(front_camera_file, bytes):
+                            import io
+                            image = Image.open(io.BytesIO(front_camera_file))
+                        else:
+                            image = Image.open(front_camera_file)
+                        
+                        st.session_state.front_captured_image = image
+                        st.rerun()
+            except Exception as e:
+                st.error(f"Error loading front camera component: {e}")
         else:
             try:
                 import streamlit.components.v1 as components
@@ -389,7 +422,7 @@ with col_left:
                             del st.session_state.current_analysis
                         st.rerun()
                 else:
-                    rear_camera_file = local_back_camera_input(height=350, width=450)
+                    rear_camera_file = local_back_camera_input(height=350, width=450, facingMode="environment", key="rear_camera_widget")
                     if rear_camera_file:
                         if isinstance(rear_camera_file, str) and (rear_camera_file.startswith("data:image") or "," in rear_camera_file):
                             import base64
@@ -428,7 +461,11 @@ with col_left:
             if input_type == "Upload File":
                 file_identifier = uploaded_file.name
             elif input_type == "Camera (Front)":
-                file_identifier = f"camera_{camera_file.size}_{hash(camera_file.getvalue())}"
+                if "front_captured_image" in st.session_state and st.session_state.front_captured_image is not None:
+                    img_obj = st.session_state.front_captured_image
+                    file_identifier = f"front_camera_{hash(img_obj.tobytes())}"
+                else:
+                    file_identifier = "awaiting_front_capture"
             else:
                 if "rear_captured_image" in st.session_state and st.session_state.rear_captured_image is not None:
                     img_obj = st.session_state.rear_captured_image

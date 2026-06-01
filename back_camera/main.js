@@ -4,7 +4,7 @@ function sendValue(value) {
 
 function onRender(event) {
   if (!window.rendered) {
-    var { height, width } = event.detail.args;
+    var { height, width, facingMode } = event.detail.args;
     
     let video = document.getElementById('video');
     let canvas = document.getElementById('canvas');
@@ -13,11 +13,12 @@ function onRender(event) {
     video.setAttribute('width', '100%');
     video.setAttribute('height', 'auto');
     
-    // Request environment facing mode (rear camera)
+    // Request specified facing mode (default to environment/rear camera)
+    const userFacingMode = facingMode || 'environment';
     const constraints = { 
       video: {
-        facingMode: 'environment',
-        advanced : [{focusMode: "continuous"}]
+        facingMode: userFacingMode,
+        ...(userFacingMode === 'environment' ? { advanced : [{focusMode: "continuous"}] } : {})
       }
     };
     
