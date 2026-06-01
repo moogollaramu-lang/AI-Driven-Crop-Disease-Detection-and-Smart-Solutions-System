@@ -371,7 +371,11 @@ with col_left:
                 st.image(image, use_container_width=True, caption="Main Specimen")
         else:
             try:
-                from streamlit_back_camera_input import back_camera_input
+                import streamlit.components.v1 as components
+                import os
+                parent_dir = os.path.dirname(os.path.abspath(__file__))
+                component_dir = os.path.join(parent_dir, "back_camera")
+                local_back_camera_input = components.declare_component("local_back_camera_input", path=component_dir)
                 
                 # Check if we already have a captured image in session state
                 if "rear_captured_image" in st.session_state and st.session_state.rear_captured_image is not None:
@@ -385,7 +389,7 @@ with col_left:
                             del st.session_state.current_analysis
                         st.rerun()
                 else:
-                    rear_camera_file = back_camera_input()
+                    rear_camera_file = local_back_camera_input(height=350, width=450)
                     if rear_camera_file:
                         if isinstance(rear_camera_file, str) and (rear_camera_file.startswith("data:image") or "," in rear_camera_file):
                             import base64
