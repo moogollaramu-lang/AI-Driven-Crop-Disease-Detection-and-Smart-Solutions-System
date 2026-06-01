@@ -49,6 +49,13 @@ svg[class*="streamlit"] {{ display: none !important; }}
 [data-testid="stLogo"] {{ display: none !important; }}
 div[data-testid="stDecoration"] {{ display: none !important; }}
 div[data-testid="stStatusWidget"] {{ display: none !important; }}
+
+/* Styled uploaded images and camera frames */
+[data-testid="stImage"] img {{
+    border-radius: 16px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -323,25 +330,15 @@ with col_left:
         
         image = None
         if input_type == "Upload File":
-            uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed", key="file_uploader")
+            uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
-                st.image(image, width='stretch', caption="Main Specimen")
-                
-                # Premium "Clear photo" button matching camera input behavior
-                if st.button("❌ Clear photo", key="clear_file_btn", use_container_width=True):
-                    if "file_uploader" in st.session_state:
-                        del st.session_state["file_uploader"]
-                    if "current_analysis" in st.session_state:
-                        del st.session_state["current_analysis"]
-                    if "last_file" in st.session_state:
-                        del st.session_state["last_file"]
-                    st.rerun()
+                st.image(image, use_container_width=True, caption="Main Specimen")
         else:
             camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
             if camera_file is not None:
                 image = Image.open(camera_file)
-                st.image(image, width='stretch', caption="Main Specimen")
+                st.image(image, use_container_width=True, caption="Main Specimen")
     
 
 
