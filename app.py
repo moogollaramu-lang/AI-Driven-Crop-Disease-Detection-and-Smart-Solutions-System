@@ -372,20 +372,35 @@ with col_left:
         else:
             try:
                 from streamlit_back_camera_input import back_camera_input
-                rear_camera_file = back_camera_input()
-                if rear_camera_file:
-                    if isinstance(rear_camera_file, str) and (rear_camera_file.startswith("data:image") or "," in rear_camera_file):
-                        import base64
-                        import io
-                        base64_data = rear_camera_file.split(",")[1] if "," in rear_camera_file else rear_camera_file
-                        img_bytes = base64.b64decode(base64_data)
-                        image = Image.open(io.BytesIO(img_bytes))
-                    elif isinstance(rear_camera_file, bytes):
-                        import io
-                        image = Image.open(io.BytesIO(rear_camera_file))
-                    else:
-                        image = Image.open(rear_camera_file)
-                    st.image(image, use_container_width=True, caption="Main Specimen")
+                
+                # Check if we already have a captured image in session state
+                if "rear_captured_image" in st.session_state and st.session_state.rear_captured_image is not None:
+                    image = st.session_state.rear_captured_image
+                    st.image(image, use_container_width=True, caption="Main Specimen (Rear)")
+                    
+                    if st.button("🔄 Retake Photo", key="retake_rear"):
+                        st.session_state.rear_captured_image = None
+                        st.session_state.last_file = None
+                        if "current_analysis" in st.session_state:
+                            del st.session_state.current_analysis
+                        st.rerun()
+                else:
+                    rear_camera_file = back_camera_input()
+                    if rear_camera_file:
+                        if isinstance(rear_camera_file, str) and (rear_camera_file.startswith("data:image") or "," in rear_camera_file):
+                            import base64
+                            import io
+                            base64_data = rear_camera_file.split(",")[1] if "," in rear_camera_file else rear_camera_file
+                            img_bytes = base64.b64decode(base64_data)
+                            image = Image.open(io.BytesIO(img_bytes))
+                        elif isinstance(rear_camera_file, bytes):
+                            import io
+                            image = Image.open(io.BytesIO(rear_camera_file))
+                        else:
+                            image = Image.open(rear_camera_file)
+                        
+                        st.session_state.rear_captured_image = image
+                        st.rerun()
             except Exception as e:
                 st.error(f"Error loading rear camera component: {e}")
     
@@ -411,9 +426,11 @@ with col_left:
             elif input_type == "Camera (Front)":
                 file_identifier = f"camera_{camera_file.size}_{hash(camera_file.getvalue())}"
             else:
-                file_len = len(rear_camera_file) if isinstance(rear_camera_file, str) else getattr(rear_camera_file, "size", 0)
-                file_hash = hash(rear_camera_file) if isinstance(rear_camera_file, str) else hash(getattr(rear_camera_file, "getvalue", lambda: 0)())
-                file_identifier = f"rear_camera_{file_len}_{file_hash}"
+                if "rear_captured_image" in st.session_state and st.session_state.rear_captured_image is not None:
+                    img_obj = st.session_state.rear_captured_image
+                    file_identifier = f"rear_camera_{hash(img_obj.tobytes())}"
+                else:
+                    file_identifier = "awaiting_rear_capture"
             
             if "current_analysis" not in st.session_state or st.session_state.get("last_file") != file_identifier:
                 with st.spinner("Processing Specimen Data..."):
