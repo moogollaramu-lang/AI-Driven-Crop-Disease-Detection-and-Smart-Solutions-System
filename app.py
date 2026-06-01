@@ -333,25 +333,7 @@ with col_left:
                 image = Image.open(camera_file)
                 st.image(image, width='stretch', caption="Main Specimen")
     
-    # Weather Split
-    display_temp = temp_str
-    display_cond = cond_str
-    
-    w1, w2 = st.columns(2)
-    with w1:
-        st.markdown(f"""
-        <div class='mini-card'>
-            <h4>🌡️ {t['w_temp']}</h4>
-            <p>{display_temp}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with w2:
-        st.markdown(f"""
-        <div class='mini-card'>
-            <h4>☁️ {t['w_cond']}</h4>
-            <p style='font-size: 1.1rem; margin-top: 10px;'>{display_cond}</p>
-        </div>
-        """, unsafe_allow_html=True)
+
 
     with col_right:
         nav_selection = st.pills("Navigation", ["ANALYZE", "ENCYCLOPEDIA", "SCHEMES", "HISTORY", "DOCTOR AI", "FIELD HUB"], default="ANALYZE", label_visibility="collapsed")
