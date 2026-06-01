@@ -40,6 +40,14 @@ function onRender(event) {
       canvas.height = h;
       context.drawImage(video, 0, 0, w, h);      
       var data = canvas.toDataURL('image/png');
+      
+      // Instantly render preview inside WebRTC component
+      let previewImg = document.getElementById('preview');
+      previewImg.src = data;
+      previewImg.style.display = 'block';
+      video.style.display = 'none';
+      captureBtn.style.display = 'none';
+      
       sendValue(data);
 
       // Stop all tracks on the active media stream to turn off the camera immediately!
