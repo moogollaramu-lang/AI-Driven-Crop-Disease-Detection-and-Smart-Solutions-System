@@ -333,29 +333,51 @@ with col_left:
         
         input_type = st.radio("Choose Input Method", ["Upload File", "Camera (Front)", "Camera (Rear)"], horizontal=True, label_visibility="collapsed")
         
+        if input_type != "Upload File":
+            st.markdown(f"""
+            <div style='background: #f0fdf4; border-radius: 12px; padding: 15px; border: 1px solid #bbf7d0; margin-bottom: 15px;'>
+                <div style='display: flex; align-items: center; gap: 8px; margin-bottom: 8px;'>
+                    <span class='pulse-green' style='width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;'></span>
+                    <strong style='font-size: 0.85rem; color: #166534; font-family: Inter, sans-serif;'>📷 MOBILE CAMERA ASSISTANT</strong>
+                </div>
+                <p style='font-size: 0.8rem; color: #15803d; line-height: 1.4; font-family: Inter, sans-serif; margin: 0;'>
+                    Please allow browser camera permissions when prompted. If the camera doesn't start:
+                    <br>• Tap the <strong>lock icon 🔒</strong> in your browser's address bar.
+                    <br>• Set <strong>Camera</strong> permission to <strong>"Allow"</strong> and refresh.
+                </p>
+            </div>
+            <style>
+            .pulse-green {{
+                animation: pulse-green 2s infinite;
+            }}
+            @keyframes pulse-green {{
+                0% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }}
+                70% {{ transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }}
+                100% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }}
+            }}
+            </style>
+            """, unsafe_allow_html=True)
+
         image = None
-        uploaded_file = None
-        camera_file = None
-        
         if input_type == "Upload File":
             uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
                 st.image(image, use_container_width=True, caption="Main Specimen")
         elif input_type == "Camera (Front)":
-            camera_file = st.camera_input("Front Camera Input", label_visibility="collapsed")
+            camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
             if camera_file is not None:
                 image = Image.open(camera_file)
                 st.image(image, use_container_width=True, caption="Main Specimen")
         else:
             try:
                 from streamlit_back_camera_input import back_camera_input
-                camera_file = back_camera_input()
-                if camera_file is not None:
-                    image = Image.open(camera_file)
+                rear_camera_file = back_camera_input()
+                if rear_camera_file is not None:
+                    image = Image.open(rear_camera_file)
                     st.image(image, use_container_width=True, caption="Main Specimen")
             except Exception as e:
-                st.error("Error loading rear camera component. Please grant camera permissions in your browser.")
+                st.error("Error loading rear camera component. Please make sure the browser has camera permissions granted.")
     
 
 
@@ -374,14 +396,12 @@ with col_left:
 """, unsafe_allow_html=True)
         elif nav_selection == "ANALYZE":
             # Use file name or ID to prevent re-analyzing the same image on every page refresh
-            if input_type == "Upload File" and uploaded_file is not None:
+            if input_type == "Upload File":
                 file_identifier = uploaded_file.name
-            elif input_type == "Camera (Front)" and camera_file is not None:
-                file_identifier = f"front_{camera_file.size}_{hash(camera_file.getvalue())}"
-            elif input_type == "Camera (Rear)" and camera_file is not None:
-                file_identifier = f"rear_{camera_file.size}_{hash(camera_file.getvalue())}"
+            elif input_type == "Camera (Front)":
+                file_identifier = f"camera_{camera_file.size}_{hash(camera_file.getvalue())}"
             else:
-                file_identifier = "temp_default"
+                file_identifier = f"rear_camera_{rear_camera_file.size}_{hash(rear_camera_file.getvalue())}"
             
             if "current_analysis" not in st.session_state or st.session_state.get("last_file") != file_identifier:
                 with st.spinner("Processing Specimen Data..."):
