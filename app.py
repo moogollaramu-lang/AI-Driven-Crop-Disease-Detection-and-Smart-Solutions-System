@@ -15,40 +15,64 @@ st.set_page_config(page_title="AI Driven Crop Disease Detection and Smart Soluti
 # Hide Streamlit Branding
 st.markdown("""
 <style>
-#MainMenu {{ visibility: hidden !important; }}
-[data-testid="stMainMenu"] {{ display: none !important; }}
-footer {{ visibility: hidden !important; }}
-[data-testid="stToolbar"] {{ display: none !important; }}
-.stDeployButton {{ display: none !important; }}
-[data-testid="stHeader"] {{ display: none !important; }}
-header {{ display: none !important; }}
-.stAppHeader {{ display: none !important; }}
-div[class*="stAppHeader"] {{ display: none !important; }}
-[data-testid="stSidebar"] {{ display: none !important; }}
-[data-testid="collapsedControl"] {{ display: none !important; }}
+#MainMenu { visibility: hidden !important; }
+[data-testid="stMainMenu"] { display: none !important; }
+footer { visibility: hidden !important; }
+[data-testid="stToolbar"] { display: none !important; }
+.stDeployButton { display: none !important; }
+[data-testid="stHeader"] { display: none !important; }
+header { display: none !important; }
+.stAppHeader { display: none !important; }
+div[class*="stAppHeader"] { display: none !important; }
+[data-testid="stSidebar"] { display: none !important; }
+[data-testid="collapsedControl"] { display: none !important; }
 
 /* Hide Streamlit Community Cloud Manage App Badge & red watermark */
-.viewerBadge {{ display: none !important; }}
-.stViewerBadge {{ display: none !important; }}
-#viewer-badge {{ display: none !important; }}
-[data-testid="viewerBadge"] {{ display: none !important; }}
-[data-testid="stViewerBadge"] {{ display: none !important; }}
-a[href*="streamlit.io"] {{ display: none !important; }}
-a[href*="streamlit.app"] {{ display: none !important; }}
-div[class*="viewerBadge"] {{ display: none !important; }}
-div[class*="stViewerBadge"] {{ display: none !important; }}
-a[class*="viewerBadge"] {{ display: none !important; }}
-a[class*="stViewerBadge"] {{ display: none !important; }}
-iframe[title="Manage app"] {{ display: none !important; }}
-iframe[src*="viewerBadge"] {{ display: none !important; }}
+.viewerBadge { display: none !important; }
+.stViewerBadge { display: none !important; }
+#viewer-badge { display: none !important; }
+[data-testid="viewerBadge"] { display: none !important; }
+[data-testid="stViewerBadge"] { display: none !important; }
+a[href*="streamlit.io"] { display: none !important; }
+a[href*="streamlit.app"] { display: none !important; }
+div[class*="viewerBadge"] { display: none !important; }
+div[class*="stViewerBadge"] { display: none !important; }
+a[class*="viewerBadge"] { display: none !important; }
+a[class*="stViewerBadge"] { display: none !important; }
+iframe[title="Manage app"] { display: none !important; }
+iframe[src*="viewerBadge"] { display: none !important; }
 
 /* Hide Streamlit logos, icons, top decorations and loading widgets */
-img[src*="streamlit"] {{ display: none !important; }}
-svg[class*="streamlit"] {{ display: none !important; }}
-.stLogo {{ display: none !important; }}
-[data-testid="stLogo"] {{ display: none !important; }}
-div[data-testid="stDecoration"] {{ display: none !important; }}
-div[data-testid="stStatusWidget"] {{ display: none !important; }}
+img[src*="streamlit"] { display: none !important; }
+svg[class*="streamlit"] { display: none !important; }
+.stLogo { display: none !important; }
+[data-testid="stLogo"] { display: none !important; }
+div[data-testid="stDecoration"] { display: none !important; }
+div[data-testid="stStatusWidget"] { display: none !important; }
+
+/* Force side-by-side columns on mobile/small viewports to keep Upload on the left */
+[data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 15px !important;
+}
+
+[data-testid="column"] {
+    width: auto !important;
+    min-width: 0 !important;
+    flex-grow: 1 !important;
+}
+
+/* Maintain proper 1.2 : 0.1 : 2.5 ratio for main columns on all viewports */
+[data-testid="stHorizontalBlock"] > div:nth-child(1) {
+    flex: 1.2 1 0% !important;
+}
+[data-testid="stHorizontalBlock"] > div:nth-child(2) {
+    flex: 0.1 1 0% !important;
+}
+[data-testid="stHorizontalBlock"] > div:nth-child(3) {
+    flex: 2.5 1 0% !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -326,12 +350,12 @@ with col_left:
             uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
-                st.image(image, use_container_width=True, caption="Main Specimen")
+                st.image(image, width='stretch', caption="Main Specimen")
         else:
             camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
             if camera_file is not None:
                 image = Image.open(camera_file)
-                st.image(image, use_container_width=True, caption="Main Specimen")
+                st.image(image, width='stretch', caption="Main Specimen")
     
 
 
@@ -376,17 +400,9 @@ with col_left:
             # Render from session state
             analysis = st.session_state.current_analysis
             
-            # Convert uploaded PIL image to base64 for display in results card
-            import io
-            buffered = io.BytesIO()
-            image.convert("RGB").save(buffered, format="JPEG")
-            img_base64 = base64.b64encode(buffered.getvalue()).decode()
-            img_html = f'<img src="data:image/jpeg;base64,{img_base64}" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 15px rgba(0,0,0,0.03);" />'
-            
             if not analysis["valid"]:
                 st.markdown(f"""
 <div class='b-main-card'>
-{img_html}
 <span class='pill-red'>{t['invalid']}</span>
 <h1 class='result-title'>{t['invalid_title']}</h1>
 <div class='solution-block'>
@@ -412,7 +428,6 @@ with col_left:
                 
                 st.markdown(f"""
 <div class='b-main-card'>
-{img_html}
 <div style='margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;'>
 {status_pill}
 <span class='action-btn' style='margin: 0;'>{t['download']}</span>
