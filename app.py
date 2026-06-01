@@ -331,19 +331,31 @@ with col_left:
 </div>
 """, unsafe_allow_html=True)
         
-        input_type = st.radio("Choose Input Method", ["Upload File", "Camera"], horizontal=True, label_visibility="collapsed")
+        input_type = st.radio("Choose Input Method", ["Upload File", "Camera (Front)", "Camera (Rear)"], horizontal=True, label_visibility="collapsed")
         
         image = None
+        uploaded_file = None
+        camera_file = None
+        
         if input_type == "Upload File":
             uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
                 st.image(image, use_container_width=True, caption="Main Specimen")
-        else:
-            camera_file = st.camera_input("Camera Input", label_visibility="collapsed")
+        elif input_type == "Camera (Front)":
+            camera_file = st.camera_input("Front Camera Input", label_visibility="collapsed")
             if camera_file is not None:
                 image = Image.open(camera_file)
                 st.image(image, use_container_width=True, caption="Main Specimen")
+        else:
+            try:
+                from streamlit_back_camera_input import back_camera_input
+                camera_file = back_camera_input()
+                if camera_file is not None:
+                    image = Image.open(camera_file)
+                    st.image(image, use_container_width=True, caption="Main Specimen")
+            except Exception as e:
+                st.error("Error loading rear camera component. Please grant camera permissions in your browser.")
     
 
 
@@ -362,7 +374,14 @@ with col_left:
 """, unsafe_allow_html=True)
         elif nav_selection == "ANALYZE":
             # Use file name or ID to prevent re-analyzing the same image on every page refresh
-            file_identifier = uploaded_file.name if input_type == "Upload File" else f"camera_{camera_file.size}_{hash(camera_file.getvalue())}"
+            if input_type == "Upload File" and uploaded_file is not None:
+                file_identifier = uploaded_file.name
+            elif input_type == "Camera (Front)" and camera_file is not None:
+                file_identifier = f"front_{camera_file.size}_{hash(camera_file.getvalue())}"
+            elif input_type == "Camera (Rear)" and camera_file is not None:
+                file_identifier = f"rear_{camera_file.size}_{hash(camera_file.getvalue())}"
+            else:
+                file_identifier = "temp_default"
             
             if "current_analysis" not in st.session_state or st.session_state.get("last_file") != file_identifier:
                 with st.spinner("Processing Specimen Data..."):
