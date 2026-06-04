@@ -406,7 +406,7 @@ with col_left:
 
 
     with col_right:
-        nav_selection = st.pills("Navigation", ["ANALYZE", "ENCYCLOPEDIA", "SCHEMES", "HISTORY", "DOCTOR AI", "FIELD HUB"], default="ANALYZE", label_visibility="collapsed")
+        nav_selection = st.pills("Navigation", ["ANALYZE", "ENCYCLOPEDIA", "SCHEMES", "HISTORY", "FIELD HUB"], default="ANALYZE", label_visibility="collapsed")
         
         if nav_selection == "ANALYZE" and image is None:
             st.markdown(f"""
@@ -946,31 +946,6 @@ with col_left:
                 fh_content = fh_content.replace("\n", " ").replace("\r", "")
                 st.markdown(fh_content, unsafe_allow_html=True)
         
-        elif nav_selection == "DOCTOR AI":
-            user_input = st.text_input(t['doc_placeholder'], placeholder=t['doc_placeholder'], key="doc_ai_input")
-        
-            chat_html = f"""
-<div style='background: #f0fdf4; padding: 18px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #bbf7d0; font-family: Inter, sans-serif; font-size: 0.95rem; color: #166534; box-shadow: 0 4px 10px rgba(22, 101, 52, 0.05);'>
-{t['doc_greeting']}
-</div>
-"""
-            if user_input:
-                chat_html += f"""
-<div style='background: #ffffff; padding: 18px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #e0e0e0; text-align: right; font-family: Inter, sans-serif; font-size: 0.95rem; color: #2c3e2e; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-left: 20%;'>
-<strong>{t['doc_you']}</strong><br>{user_input}
-</div>
-<div style='background: #f0fdf4; padding: 18px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #bbf7d0; font-family: Inter, sans-serif; font-size: 0.95rem; color: #166534; box-shadow: 0 4px 10px rgba(22, 101, 52, 0.05); margin-right: 20%;'>
-<strong>DOCTOR AI:</strong><br>{t['doc_response']}
-</div>
-"""
-        
-            st.markdown(f"""
-<div class='b-main-card'>
-<h2 class='result-title'>{t['doc_title']}</h2>
-{chat_html}
-</div>
-""", unsafe_allow_html=True)
-    
         elif nav_selection == "SCHEMES":
             st.markdown(f"<h2 class='result-title' style='margin-bottom: 15px;'>{t['sch_title']}</h2>", unsafe_allow_html=True)
             
