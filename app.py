@@ -901,26 +901,6 @@ with col_left:
                 fh_content = f"""<div class='b-main-card'>
     <h2 class='result-title'>{t['fh_title']} ({detected_region.upper()})</h2>
 
-    <!-- Soil Telemetry -->
-    <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_soil']}</h4>
-    <div style='display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 35px;'>
-    <div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 180px;'>
-    <div style='font-size: 0.75rem; color: #888; font-family: Inter, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['fh_s1_l']}</div>
-    <div style='font-size: 2.2rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif; margin: 5px 0;'>42%</div>
-    <div style='font-size: 0.85rem; color: #d32f2f; font-weight: 600;'>-5% ↓</div>
-    </div>
-    <div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 180px;'>
-    <div style='font-size: 0.75rem; color: #888; font-family: Inter, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['fh_s2_l']}</div>
-    <div style='font-size: 2.2rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif; margin: 5px 0;'>28°C</div>
-    <div style='font-size: 0.85rem; color: #10b981; font-weight: 600;'>+2°C ↑</div>
-    </div>
-    <div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 180px;'>
-    <div style='font-size: 0.75rem; color: #888; font-family: Inter, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['fh_s3_l']}</div>
-    <div style='font-size: 2.2rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif; margin: 5px 0;'>{t['fh_s3_v']}</div>
-    <div style='font-size: 0.85rem; color: #10b981; font-weight: 600;'>{t['fh_s3_d']}</div>
-    </div>
-    </div>
-
     <!-- Regional Alerts -->
     <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_alerts']}</h4>
     {alert_html}
