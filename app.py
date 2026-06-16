@@ -990,12 +990,8 @@ with col_left:
                             </div>
                         </div>
                         """
-                
-                st.markdown(f"""
-                <div class='b-main-card' style='margin-top: 10px;'>
-                    {vendor_cards_html}
-                </div>
-                """, unsafe_allow_html=True)
+                vendor_cards_html = vendor_cards_html.replace("\n", " ").replace("\r", "")
+                st.markdown(f"<div class='b-main-card' style='margin-top: 10px;'>{vendor_cards_html}</div>", unsafe_allow_html=True)
 
                 # Bottom card: Community Connectivity
                 fh_bottom = f"""<div class='b-main-card' style='margin-top: 20px;'>
