@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 from translations import TRANSLATIONS
-from utils import is_leaf, predict_disease, get_recommendations, get_weather, get_mandi_rates, get_regional_crop_threats, get_community_connectivity, get_vegetable_markets
+from utils import is_leaf, predict_disease, get_recommendations, get_weather, get_mandi_rates, get_regional_crop_threats, get_community_connectivity
 import disease_database
 import time
 import base64
@@ -406,7 +406,7 @@ with col_left:
 
 
     with col_right:
-        nav_selection = st.pills("Navigation", ["ANALYZE", "ENCYCLOPEDIA", "SCHEMES", "NEARBY MARKETS", "HISTORY", "FIELD HUB"], default="ANALYZE", label_visibility="collapsed")
+        nav_selection = st.pills("Navigation", ["ANALYZE", "ENCYCLOPEDIA", "SCHEMES", "HISTORY", "FIELD HUB"], default="ANALYZE", label_visibility="collapsed")
         
         if nav_selection == "ANALYZE" and image is None:
             st.markdown(f"""
@@ -898,7 +898,7 @@ with col_left:
     </div>"""
                 conn_cards = conn_cards.replace("\n", " ").replace("\r", "")
 
-                fh_content = f"""<div class='b-main-card'>
+                fh_top = f"""<div class='b-main-card'>
     <h2 class='result-title'>{t['fh_title']} ({detected_region.upper()})</h2>
 
     <!-- Regional Alerts -->
@@ -914,17 +914,99 @@ with col_left:
     <div style='display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 35px;'>
     {mandi_cards}
     </div>
+    </div>"""
+                st.markdown(fh_top.replace("\n", " ").replace("\r", ""), unsafe_allow_html=True)
 
+                # Vegetable Market Vendor Directory
+                st.markdown(f"""
+                <div class='b-main-card' style='margin-top: 20px; margin-bottom: 15px;'>
+                <h2 class='result-title' style='margin-bottom: 0px;'>{t['vendor_title']}</h2>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                col_search, col_filter = st.columns([2, 1])
+                with col_search:
+                    search_query = st.text_input("Search Vendors", label_visibility="collapsed", placeholder=t['vendor_search_placeholder'], key="vendor_search_input")
+                with col_filter:
+                    filter_opts = ["All", "Wholesale", "Organic", "Leafy Greens"]
+                    selected_filter = st.selectbox("Category Filter", filter_opts, label_visibility="collapsed", key="vendor_cat_filter")
+                
+                from utils import get_nearby_vendors
+                all_vendors = get_nearby_vendors(lang, region=detected_region)
+                
+                filtered_vendors = []
+                for v in all_vendors:
+                    match_search = True
+                    if search_query:
+                        q = search_query.lower()
+                        match_search = (q in v["name"].lower() or 
+                                        q in v["market"].lower() or 
+                                        q in v["products"].lower() or 
+                                        q in v["category"].lower())
+                    
+                    match_cat = True
+                    if selected_filter != "All":
+                        match_cat = (v["category_en"].lower() == selected_filter.lower())
+                        
+                    if match_search and match_cat:
+                        filtered_vendors.append(v)
+                
+                vendor_cards_html = ""
+                if not filtered_vendors:
+                    vendor_cards_html = "<div style='text-align: center; color: #888; padding: 30px; font-family: Inter, sans-serif;'>No matching vendors found.</div>"
+                else:
+                    for v in filtered_vendors:
+                        status_badge = f"<span style='background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;'>{t['vendor_open']}</span>" if v["is_open"] else f"<span style='background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;'>{t['vendor_closed']}</span>"
+                        
+                        vendor_cards_html += f"""
+                        <div style='background: white; border: 1px solid #e0e0e0; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); font-family: Inter, sans-serif;'>
+                            <div style='display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;'>
+                                <div>
+                                    <h3 style='margin: 0 0 4px 0; color: #2c3e2e; font-size: 1.25rem; font-weight: 700;'>{v['name']}</h3>
+                                    <div style='font-size: 0.8rem; color: #666; margin-bottom: 8px;'>📍 {v['market']} ({v['distance']})</div>
+                                </div>
+                                <div style='display: flex; gap: 8px; align-items: center;'>
+                                    <span style='background: #fef08a; color: #854d0e; border: 1px solid #fef08a; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;'>⭐ {v['rating']}</span>
+                                    {status_badge}
+                                </div>
+                            </div>
+                            
+                            <div style='margin: 12px 0; padding: 10px 12px; background: #f9f9f9; border-radius: 10px; border-left: 3px solid #10b981;'>
+                                <div style='font-size: 0.75rem; color: #888; font-weight: 700; text-transform: uppercase;'>{t['vendor_products']}</div>
+                                <div style='font-size: 0.9rem; color: #2c3e2e; font-weight: 600;'>{v['products']}</div>
+                            </div>
+                            
+                            <div style='font-size: 0.8rem; color: #666; margin-bottom: 15px;'>
+                                <strong>Category:</strong> {v['category']} | <strong>Hours:</strong> {v['open_hours']}
+                            </div>
+                            
+                            <div style='display: flex; gap: 12px; border-top: 1px solid #f0f0f0; padding-top: 15px; justify-content: flex-end;'>
+                                <a href='tel:{v['contact'].replace(" ", "")}' style='display: inline-flex; align-items: center; gap: 6px; background: #e8ede9; color: #3c5a45; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 700;'>
+                                    📞 {t['vendor_call']}
+                                </a>
+                                <a href='https://wa.me/{v['contact'].replace(" ", "").replace("+", "")}?text=Hello%20{v['name'].replace(" ", "%20")},%20I%20saw%20your%20listing%20on%20the%20Crop%20Disease%20App%20and%20want%20to%20inquire%20about%20your%20vegetables.' target='_blank' style='display: inline-flex; align-items: center; gap: 6px; background: #25d366; color: white; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 700;'>
+                                    💬 {t['vendor_wa']}
+                                </a>
+                            </div>
+                        </div>
+                        """
+                
+                st.markdown(f"""
+                <div class='b-main-card' style='margin-top: 10px;'>
+                    {vendor_cards_html}
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Bottom card: Community Connectivity
+                fh_bottom = f"""<div class='b-main-card' style='margin-top: 20px;'>
     <!-- Market Community Connectivity -->
     <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_community_connectivity']}</h4>
     <p style='font-family: Inter, sans-serif; font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5;'>{t['fh_conn_desc']}</p>
     <div style='display: flex; gap: 20px; flex-wrap: wrap;'>
     {conn_cards}
     </div>
-
     </div>"""
-                fh_content = fh_content.replace("\n", " ").replace("\r", "")
-                st.markdown(fh_content, unsafe_allow_html=True)
+                st.markdown(fh_bottom.replace("\n", " ").replace("\r", ""), unsafe_allow_html=True)
         
         elif nav_selection == "SCHEMES":
             st.markdown(f"<h2 class='result-title' style='margin-bottom: 15px;'>{t['sch_title']}</h2>", unsafe_allow_html=True)
@@ -986,180 +1068,6 @@ with col_left:
     </div>
     """, unsafe_allow_html=True)
         
-        elif nav_selection == "NEARBY MARKETS":
-            if not st.session_state.get('loc_detected', False):
-                locked_html = f"""<div class='b-main-card' style='display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 420px; background: rgba(244, 241, 235, 0.85); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.7); margin-bottom: 25px;'>
-<!-- Blurred Background Decorative Telemetry circles -->
-<div style='position: absolute; top: -50px; left: -50px; width: 200px; height: 200px; background: rgba(60, 90, 69, 0.08); border-radius: 50%; filter: blur(50px);'></div>
-<div style='position: absolute; bottom: -50px; right: -50px; width: 250px; height: 250px; background: rgba(211, 47, 47, 0.04); border-radius: 50%; filter: blur(60px);'></div>
-<div style='font-size: 4.5rem; margin-bottom: 20px; animation: pulse-lock 2s infinite; filter: drop-shadow(0 10px 15px rgba(60, 90, 69, 0.1));'>🛰️</div>
-<h1 style='font-family: Playfair Display, serif; font-size: 2.2rem; color: #2c3e2e; margin-bottom: 12px;'>{t['markets_locked_title']}</h1>
-<p style='font-family: Inter, sans-serif; font-size: 1.05rem; color: #555; max-width: 520px; line-height: 1.6; margin: 0 auto;'>{t['markets_locked_desc']}</p>
-<style>
-@keyframes pulse-lock {{
-0% {{ transform: scale(1); opacity: 0.95; }}
-50% {{ transform: scale(1.05); opacity: 1; }}
-100% {{ transform: scale(1); opacity: 0.95; }}
-}}
-</style>
-</div>"""
-                locked_html = locked_html.replace('\n', ' ').replace('\r', '')
-                st.markdown(locked_html, unsafe_allow_html=True)
-                
-                # Render interactive Streamlit button cleanly in a centered column underneath the card
-                c1, c2, c3 = st.columns([1, 1.5, 1])
-                with c2:
-                    activate_clicked = st.button(t['fh_locked_btn'], key="activate_markets_btn", type="primary")
-                    if activate_clicked:
-                        import time
-                        with st.spinner("Accessing GPS/IP Telemetry..."):
-                            time.sleep(1.0)
-                            st.session_state.loc_detected = True
-                            st.session_state.weather, st.session_state.detected_region, st.session_state.detected_area = get_weather(lang)
-                        st.rerun()
-            else:
-                detected_area = st.session_state.get('detected_area', 'Guntur')
-                
-                # City selection list
-                cities = ["Guntur", "Vijayawada", "Visakhapatnam", "Kurnool", "Hyderabad", "Warangal", "Nizamabad"]
-                
-                # Determine default city index
-                default_idx = 0
-                if detected_area in cities:
-                    default_idx = cities.index(detected_area)
-                
-                # Search controls
-                col_sel, col_search = st.columns([1.5, 2])
-                with col_sel:
-                    selected_city = st.selectbox(t['select_city'], options=cities, index=default_idx)
-                with col_search:
-                    search_query = st.text_input("Search", placeholder=t['search_markets'], label_visibility="collapsed")
-                
-                # Filter pills
-                filter_keys = ["All", "Wholesale", "Retail", "Organic", "Home Delivery", "Open Now"]
-                filter_lbls = [t['filter_all'], t['filter_wholesale'], t['filter_retail'], t['filter_organic'], t['filter_delivery'], t['filter_open']]
-                selected_filter_lbl = st.pills("Filters", filter_lbls, default=t['filter_all'], label_visibility="collapsed")
-                selected_filter = filter_keys[filter_lbls.index(selected_filter_lbl)]
-                
-                # Fetch markets
-                markets = get_vegetable_markets(lang, selected_city)
-                
-                # Filter by search query (name or specialties)
-                if search_query:
-                    search_query_lower = search_query.lower()
-                    markets = [
-                        m for m in markets
-                        if search_query_lower in m["name"].lower() or search_query_lower in m["specialties"].lower()
-                    ]
-                
-                # Filter by selected filter tag
-                if selected_filter == "Wholesale":
-                    markets = [m for m in markets if "Wholesale" in m["tags"]]
-                elif selected_filter == "Retail":
-                    markets = [m for m in markets if "Retail" in m["tags"]]
-                elif selected_filter == "Organic":
-                    markets = [m for m in markets if "Organic" in m["tags"]]
-                elif selected_filter == "Home Delivery":
-                    markets = [m for m in markets if "Delivery" in m["tags"]]
-                elif selected_filter == "Open Now":
-                    markets = [m for m in markets if m["is_open"]]
-                
-                # Render listings
-                st.markdown(f"<h2 class='result-title' style='margin-bottom: 25px;'>{t['nav_markets']} ({selected_city.upper()})</h2>", unsafe_allow_html=True)
-                
-                if not markets:
-                    st.markdown(f"""
-                    <div style='background: white; padding: 30px; border-radius: 20px; border: 1px solid #e0e0e0; text-align: center; color: #888; font-family: Inter, sans-serif; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-top: 15px;'>
-                        <div style='font-size: 2.5rem; margin-bottom: 15px;'>🔍</div>
-                        <p style='font-size: 1rem; margin: 0;'>{t['no_markets_found']}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    # Let's generate a list of HTML cards
-                    cards_html = ""
-                    for m in markets:
-                        # Tags HTML
-                        tags_html = ""
-                        for tag in m["tags"]:
-                            badge_color = "#3c5a45"
-                            if tag == "Organic":
-                                badge_color = "#166534"
-                            elif tag == "Wholesale":
-                                badge_color = "#b91c1c"
-                            elif tag == "Delivery":
-                                badge_color = "#0284c7"
-                            tags_html += f"<span style='background: {badge_color}10; color: {badge_color}; border: 1px solid {badge_color}30; padding: 2px 10px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; margin-right: 6px; text-transform: uppercase;'>{tag}</span>"
-                        
-                        # Timings status color
-                        status_color = "#166534" if m["is_open"] else "#b91c1c"
-                        status_text = t['open_now'] if m["is_open"] else t['closed_now']
-                        
-                        # Star rating rendering
-                        stars = "★" * int(m["rating"]) + "☆" * (5 - int(m["rating"]))
-                        
-                        # Generate maps search URL
-                        map_query = f"{m['name']} {m['city']}".replace(" ", "+")
-                        map_url = f"https://www.google.com/maps/search/?api=1&query={map_query}"
-                        
-                        # Prefilled WhatsApp message
-                        wa_message = f"Hi, I am interested in fresh vegetables at {m['name']}."
-                        import urllib.parse
-                        wa_url = f"https://wa.me/{m['contact'].replace(' ', '').replace('+', '')}?text={urllib.parse.quote(wa_message)}"
-                        
-                        cards_html += f"""
-                        <div class='b-card' style='background: #ffffff; padding: 24px; border-radius: 20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; font-family: Inter, sans-serif; position: relative;'>
-                            <div style='display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;'>
-                                <div>
-                                    <div style='display: flex; align-items: center; gap: 8px; flex-wrap: wrap;'>
-                                        <h3 style='font-family: Playfair Display, serif; font-size: 1.4rem; color: #2c3e2e; margin: 0; font-weight: 700;'>{m['name']}</h3>
-                                        <span style='background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05rem;'>✓ {t['verified_partner']}</span>
-                                    </div>
-                                    <div style='display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 0.85rem; color: #666;'>
-                                        <span style='color: #f59e0b; font-weight: 700;'>{m['rating']}</span>
-                                        <span style='color: #f59e0b; font-size: 1rem;'>{stars}</span>
-                                        <span>({m['reviews_count']} {t['ratings_label']})</span>
-                                        <span style='color: #ddd;'>|</span>
-                                        <span style='color: #3c5a45; font-weight: 600;'>📍 {m['distance']} km ({t['distance_label']})</span>
-                                    </div>
-                                </div>
-                                <div style='text-align: right;'>
-                                    <span style='color: {status_color}; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05rem;'>● {status_text}</span>
-                                    <div style='font-size: 0.75rem; color: #666; margin-top: 4px;'>{m['timings']}</div>
-                                </div>
-                            </div>
-                            
-                            <div style='margin-top: 15px; font-size: 0.9rem; color: #4a4a4a; line-height: 1.5;'>
-                                <strong>🏢 Address:</strong> {m['address']}
-                            </div>
-                            <div style='margin-top: 6px; font-size: 0.9rem; color: #4a4a4a; line-height: 1.5;'>
-                                <strong>🥬 {t['specializes_in']}</strong> {m['specialties']}
-                            </div>
-                            
-                            <div style='margin-top: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 15px; border-top: 1px solid #f0f0f0;'>
-                                <div>
-                                    {tags_html}
-                                </div>
-                                <div style='display: flex; gap: 8px;'>
-                                    <a href='tel:{m['contact'].replace(" ", "")}' style='display: inline-block; background: #3c5a45; color: white !important; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-size: 0.8rem; font-weight: 700; transition: background 0.2s;'>
-                                        📞 {t['call_now']}
-                                    </a>
-                                    <a href='{map_url}' target='_blank' style='display: inline-block; background: #e8ede9; color: #3c5a45 !important; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: 1px solid #d1ded3;'>
-                                        🗺️ {t['get_directions']}
-                                    </a>
-                                    <a href='{wa_url}' target='_blank' style='display: inline-block; background: #25d366; color: white !important; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-size: 0.8rem; font-weight: 700;'>
-                                        💬 WhatsApp
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        """
-                    
-                    st.markdown(f"""
-                    <div style='margin-top: 20px;'>
-                        {cards_html}
-                    </div>
-                    """, unsafe_allow_html=True)
-
         elif nav_selection == "HISTORY":
             if len(st.session_state.history) == 0:
                 history_html = f"<div style='background: #e8ede9; padding: 20px; border-radius: 16px; color: #3c5a45; font-family: Inter, sans-serif; text-align: center; font-weight: 500;'>{t['hist_empty']}</div>"
