@@ -143,17 +143,7 @@ TRANSLATIONS = {
         "role_agronomist": "Agronomist Helpline",
         "role_logistics": "Transport & Logistics",
         "role_dealer": "Seed & Bio-Input Supplies",
-        "role_buyer": "Wholesale Crop Buyer",
-        "vendor_title": "Nearby Vegetable Markets & Vendors",
-        "vendor_search_placeholder": "Search vendors, markets, or products...",
-        "vendor_filter_lbl": "Filter by Type",
-        "vendor_call": "Call Vendor",
-        "vendor_wa": "WhatsApp Chat",
-        "vendor_rating": "Rating",
-        "vendor_distance": "Distance",
-        "vendor_open": "Open Now",
-        "vendor_closed": "Closed",
-        "vendor_products": "Products"
+        "role_buyer": "Wholesale Crop Buyer"
     },
     "Hindi": {
         "awaiting": "नमूने की प्रतीक्षा है",
@@ -299,17 +289,7 @@ TRANSLATIONS = {
         "role_agronomist": "कृषि विशेषज्ञ हेल्पलाइन",
         "role_logistics": "परिवहन और रसद",
         "role_dealer": "बीज और जैविक-इनपुट आपूर्ति",
-        "role_buyer": "थोक फसल खरीदार",
-        "vendor_title": "नजदीकी सब्जी बाजार और विक्रेता",
-        "vendor_search_placeholder": "विक्रेताओं, बाजारों या उत्पादों को खोजें...",
-        "vendor_filter_lbl": "प्रकार के अनुसार फ़िल्टर करें",
-        "vendor_call": "विक्रेता को कॉल करें",
-        "vendor_wa": "व्हाट्सएप चैट",
-        "vendor_rating": "रेटिंग",
-        "vendor_distance": "दूरी",
-        "vendor_open": "अभी खुला है",
-        "vendor_closed": "बंद",
-        "vendor_products": "उत्पाद"
+        "role_buyer": "थोक फसल खरीदार"
     },
     "Telugu": {
         "awaiting": "నమూనా కోసం వేచి ఉంది",
@@ -455,16 +435,6 @@ TRANSLATIONS = {
         "role_agronomist": "వ్యవసాయ నిపుణుల హెల్ప్‌లైన్",
         "role_logistics": "రవాణా & లాజిస్టిక్స్",
         "role_dealer": "విత్తనాలు & బయో-ఇన్‌పుట్ సరఫరాదారులు",
-        "role_buyer": "టోకు పంట కొనుగోలుదారు",
-        "vendor_title": "సమీప కూరగాయల మార్కెట్లు & విక్రేతలు",
-        "vendor_search_placeholder": "విక్రేతలు, మార్కెట్లు లేదా ఉత్పత్తులను వెతకండి...",
-        "vendor_filter_lbl": "రకం ఆధారంగా వడపోత",
-        "vendor_call": "విక్రేత కి కాల్ చేయి",
-        "vendor_wa": "వాట్సాప్ చాట్",
-        "vendor_rating": "రేటింగ్",
-        "vendor_distance": "దూరం",
-        "vendor_open": "తెరిచి ఉంది",
-        "vendor_closed": "మూసివేసి ఉంది",
-        "vendor_products": "ఉత్పత్తులు"
+        "role_buyer": "టోకు పంట కొనుగోలుదారు"
     }
 }

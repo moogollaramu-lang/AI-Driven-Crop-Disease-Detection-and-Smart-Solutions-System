@@ -898,7 +898,7 @@ with col_left:
     </div>"""
                 conn_cards = conn_cards.replace("\n", " ").replace("\r", "")
 
-                fh_top = f"""<div class='b-main-card'>
+                fh_content = f"""<div class='b-main-card'>
     <h2 class='result-title'>{t['fh_title']} ({detected_region.upper()})</h2>
 
     <!-- Regional Alerts -->
@@ -914,95 +914,17 @@ with col_left:
     <div style='display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 35px;'>
     {mandi_cards}
     </div>
-    </div>"""
-                st.markdown(fh_top.replace("\n", " ").replace("\r", ""), unsafe_allow_html=True)
 
-                # Vegetable Market Vendor Directory
-                st.markdown(f"""
-                <div class='b-main-card' style='margin-top: 20px; margin-bottom: 15px;'>
-                <h2 class='result-title' style='margin-bottom: 0px;'>{t['vendor_title']}</h2>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                col_search, col_filter = st.columns([2, 1])
-                with col_search:
-                    search_query = st.text_input("Search Vendors", label_visibility="collapsed", placeholder=t['vendor_search_placeholder'], key="vendor_search_input")
-                with col_filter:
-                    filter_opts = ["All", "Wholesale", "Organic", "Leafy Greens"]
-                    selected_filter = st.selectbox("Category Filter", filter_opts, label_visibility="collapsed", key="vendor_cat_filter")
-                
-                from utils import get_nearby_vendors
-                all_vendors = get_nearby_vendors(lang, region=detected_region)
-                
-                filtered_vendors = []
-                for v in all_vendors:
-                    match_search = True
-                    if search_query:
-                        q = search_query.lower()
-                        match_search = (q in v["name"].lower() or 
-                                        q in v["market"].lower() or 
-                                        q in v["products"].lower() or 
-                                        q in v["category"].lower())
-                    
-                    match_cat = True
-                    if selected_filter != "All":
-                        match_cat = (v["category_en"].lower() == selected_filter.lower())
-                        
-                    if match_search and match_cat:
-                        filtered_vendors.append(v)
-                
-                vendor_cards_html = ""
-                if not filtered_vendors:
-                    vendor_cards_html = "<div style='text-align: center; color: #888; padding: 30px; font-family: Inter, sans-serif;'>No matching vendors found.</div>"
-                else:
-                    for v in filtered_vendors:
-                        status_badge = f"<span style='background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;'>{t['vendor_open']}</span>" if v["is_open"] else f"<span style='background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;'>{t['vendor_closed']}</span>"
-                        
-                        vendor_cards_html += f"""
-                        <div style='background: white; border: 1px solid #e0e0e0; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); font-family: Inter, sans-serif;'>
-                            <div style='display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;'>
-                                <div>
-                                    <h3 style='margin: 0 0 4px 0; color: #2c3e2e; font-size: 1.25rem; font-weight: 700;'>{v['name']}</h3>
-                                    <div style='font-size: 0.8rem; color: #666; margin-bottom: 8px;'>📍 {v['market']} ({v['distance']})</div>
-                                </div>
-                                <div style='display: flex; gap: 8px; align-items: center;'>
-                                    <span style='background: #fef08a; color: #854d0e; border: 1px solid #fef08a; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;'>⭐ {v['rating']}</span>
-                                    {status_badge}
-                                </div>
-                            </div>
-                            
-                            <div style='margin: 12px 0; padding: 10px 12px; background: #f9f9f9; border-radius: 10px; border-left: 3px solid #10b981;'>
-                                <div style='font-size: 0.75rem; color: #888; font-weight: 700; text-transform: uppercase;'>{t['vendor_products']}</div>
-                                <div style='font-size: 0.9rem; color: #2c3e2e; font-weight: 600;'>{v['products']}</div>
-                            </div>
-                            
-                            <div style='font-size: 0.8rem; color: #666; margin-bottom: 15px;'>
-                                <strong>Category:</strong> {v['category']} | <strong>Hours:</strong> {v['open_hours']}
-                            </div>
-                            
-                            <div style='display: flex; gap: 12px; border-top: 1px solid #f0f0f0; padding-top: 15px; justify-content: flex-end;'>
-                                <a href='tel:{v['contact'].replace(" ", "")}' style='display: inline-flex; align-items: center; gap: 6px; background: #e8ede9; color: #3c5a45; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 700;'>
-                                    📞 {t['vendor_call']}
-                                </a>
-                                <a href='https://wa.me/{v['contact'].replace(" ", "").replace("+", "")}?text=Hello%20{v['name'].replace(" ", "%20")},%20I%20saw%20your%20listing%20on%20the%20Crop%20Disease%20App%20and%20want%20to%20inquire%20about%20your%20vegetables.' target='_blank' style='display: inline-flex; align-items: center; gap: 6px; background: #25d366; color: white; padding: 8px 16px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 700;'>
-                                    💬 {t['vendor_wa']}
-                                </a>
-                            </div>
-                        </div>
-                        """
-                vendor_cards_html = vendor_cards_html.replace("\n", " ").replace("\r", "")
-                st.markdown(f"<div class='b-main-card' style='margin-top: 10px;'>{vendor_cards_html}</div>", unsafe_allow_html=True)
-
-                # Bottom card: Community Connectivity
-                fh_bottom = f"""<div class='b-main-card' style='margin-top: 20px;'>
     <!-- Market Community Connectivity -->
     <h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_community_connectivity']}</h4>
     <p style='font-family: Inter, sans-serif; font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5;'>{t['fh_conn_desc']}</p>
     <div style='display: flex; gap: 20px; flex-wrap: wrap;'>
     {conn_cards}
     </div>
+
     </div>"""
-                st.markdown(fh_bottom.replace("\n", " ").replace("\r", ""), unsafe_allow_html=True)
+                fh_content = fh_content.replace("\n", " ").replace("\r", "")
+                st.markdown(fh_content, unsafe_allow_html=True)
         
         elif nav_selection == "SCHEMES":
             st.markdown(f"<h2 class='result-title' style='margin-bottom: 15px;'>{t['sch_title']}</h2>", unsafe_allow_html=True)
