@@ -542,3 +542,464 @@ def get_community_connectivity(lang="English", region=None):
             "contact": c["contact"]
         })
     return formatted_contacts
+
+
+def get_vegetable_markets(lang="English", city="Guntur"):
+    """
+    Returns a list of local vegetable markets with Justdial-style directory details.
+    """
+    raw_markets = [
+        # Guntur
+        {
+            "id": "guntur_ntr",
+            "name": {
+                "English": "NTR Vegetable Market (Rythu Bazar)",
+                "Hindi": "एनटीआर सब्जी मंडी (रायथु बाजार)",
+                "Telugu": "NTR కూరగాయల మార్కెట్ (రైతు బజార్)"
+            },
+            "rating": 4.4,
+            "reviews_count": 340,
+            "distance": 0.8,
+            "address": {
+                "English": "NTR Stadium Grounds, Guntur HO, Guntur",
+                "Hindi": "एनटीआर स्टेडियम ग्राउंड, गुंटूर एचओ, गुंटूर",
+                "Telugu": "NTR స్టేడియం మైదానం, గుంటూరు HO, గుంటూరు"
+            },
+            "timings": {
+                "English": "Open Now: 5:00 AM - 1:00 PM, 4:00 PM - 8:00 PM",
+                "Hindi": "अभी खुला है: सुबह 5:00 - दोपहर 1:00, शाम 4:00 - रात 8:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 5:00 - మధ్యాహ్నం 1:00, సాయంత్రం 4:00 - రాత్రి 8:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Fresh Tomato, Green Chilli, Onion, Brinjal, Potatoes",
+                "Hindi": "ताजा टमाटर, हरी मिर्च, प्याज, बैंगन, आलू",
+                "Telugu": "తాజా టొమాటో, పచ్చిమిర్చి, ఉల్లిపాయ, వంకాయ, బంగాళాదుంపలు"
+            },
+            "contact": "+91 94401 99887",
+            "tags": ["Wholesale", "Retail"],
+            "city": "Guntur"
+        },
+        {
+            "id": "guntur_patnam",
+            "name": {
+                "English": "Patnam Bazar Wholesale Market",
+                "Hindi": "पटनाम बाजार थोक सब्जी मंडी",
+                "Telugu": "పట్నం బజార్ హోల్‌సేల్ మార్కెట్"
+            },
+            "rating": 4.2,
+            "reviews_count": 195,
+            "distance": 1.5,
+            "address": {
+                "English": "Patnam Bazar Road, Guntur HO, Guntur",
+                "Hindi": "पटनाम बाजार रोड, गुंटूर एचओ, गुंटूर",
+                "Telugu": "పట్నం బజార్ రోడ్డు, గుంటూరు HO, గుంటూరు"
+            },
+            "timings": {
+                "English": "Open Now: 4:00 AM - 2:00 PM",
+                "Hindi": "अभी खुला है: सुबह 4:00 - दोपहर 2:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 4:00 - మధ్యాహ్నం 2:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Bulk Chilli, Tomato, Onions, Garlic, Ginger",
+                "Hindi": "थोक मिर्च, टमाटर, प्याज, लहसुन, अदरक",
+                "Telugu": "బల్క్ మిర్చి, టొమాటో, ఉల్లిపాయలు, వెల్లుల్లి, అల్లం"
+            },
+            "contact": "+91 86322 12345",
+            "tags": ["Wholesale"],
+            "city": "Guntur"
+        },
+        {
+            "id": "guntur_organic",
+            "name": {
+                "English": "Amaravati Road Organic Farmers Outlet",
+                "Hindi": "अमरावती रोड ऑर्गेनिक फार्मर्स आउटलेट",
+                "Telugu": "అమరావతి రోడ్ ఆర్గానిక్ ఫార్మర్స్ అవుట్‌లెట్"
+            },
+            "rating": 4.7,
+            "reviews_count": 85,
+            "distance": 2.6,
+            "address": {
+                "English": "Opposite Gardens, Amaravati Road, Guntur",
+                "Hindi": "गार्डन के सामने, अमरावती रोड, गुंटूर",
+                "Telugu": "గార్డెన్స్ ఎదురుగా, అమరావతి రోడ్, గుంటూరు"
+            },
+            "timings": {
+                "English": "Open Now: 7:00 AM - 8:00 PM",
+                "Hindi": "अभी खुला है: सुबह 7:00 - रात 8:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 7:00 - రాత్రి 8:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Certified Organic Vegetables, Leafy Greens, Bell Peppers",
+                "Hindi": "प्रमाणित जैविक सब्जियां, पत्तेदार साग, शिमला मिर्च",
+                "Telugu": "ధృవీకరించబడిన సేంద్రీయ కూరగాయలు, ఆకుకూరలు, బెల్ పెప్పర్స్"
+            },
+            "contact": "+91 98480 55443",
+            "tags": ["Retail", "Organic", "Delivery"],
+            "city": "Guntur"
+        },
+        # Vijayawada
+        {
+            "id": "vja_swaraj",
+            "name": {
+                "English": "Swaraj Maidan Rythu Bazar",
+                "Hindi": "स्वराज मैदान रायथु बाजार",
+                "Telugu": "స్వరాజ్ మైదాన్ రైతు బజార్"
+            },
+            "rating": 4.5,
+            "reviews_count": 510,
+            "distance": 1.2,
+            "address": {
+                "English": "Swaraj Maidan, Governorpet, Vijayawada",
+                "Hindi": "स्वराज मैदान, गवर्नरपेट, विजयवाड़ा",
+                "Telugu": "స్వరాజ్ మైదాన్, గవర్నర్‌పేట్, విజయవాడ"
+            },
+            "timings": {
+                "English": "Open Now: 5:00 AM - 1:00 PM, 4:00 PM - 8:00 PM",
+                "Hindi": "अभी खुला है: सुबह 5:00 - दोपहर 1:00, शाम 4:00 - रात 8:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 5:00 - మధ్యాహ్నం 1:00, సాయంత్రం 4:00 - రాత్రి 8:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Fresh Local Vegetables, Tomato, Brinjal, Ladies Finger, Drumsticks",
+                "Hindi": "ताजी स्थानीय सब्जियां, टमाटर, बैंगन, भिंडी, सहजन",
+                "Telugu": "తాజా స్థానిక కూరగాయలు, టొమాటో, వంకాయ, బెండకాయ, మునగకాయలు"
+            },
+            "contact": "+91 86624 56789",
+            "tags": ["Wholesale", "Retail"],
+            "city": "Vijayawada"
+        },
+        {
+            "id": "vja_kedar",
+            "name": {
+                "English": "Kedareswaropet Wholesale Vegetable Market",
+                "Hindi": "केदारेश्वरपेट थोक सब्जी मंडी",
+                "Telugu": "కేదారేశ్వరావుపేట హోల్‌సేల్ కూరగాయల మార్కెట్"
+            },
+            "rating": 4.1,
+            "reviews_count": 280,
+            "distance": 2.8,
+            "address": {
+                "English": "Kedareswaropet, Vijayawada",
+                "Hindi": "केदारेश्वरपेट, विजयवाड़ा",
+                "Telugu": "కేదారేశ్వరావుపేట, విజయవాడ"
+            },
+            "timings": {
+                "English": "Open Now: 3:00 AM - 12:00 PM",
+                "Hindi": "अभी खुला है: सुबह 3:00 - दोपहर 12:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 3:00 - మధ్యాహ్నం 12:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Bulk Potato, Onion, Cabbage, Carrot, Ginger, Garlic",
+                "Hindi": "थोक आलू, प्याज, पत्तागोभी, गाजर, अदरक, लहसुन",
+                "Telugu": "బల్క్ బంగాళాదుంపలు, ఉల్లిపాయలు, క్యాబేజీ, క్యారెట్, అల్లం, వెల్లుల్లి"
+            },
+            "contact": "+91 99081 22334",
+            "tags": ["Wholesale"],
+            "city": "Vijayawada"
+        },
+        {
+            "id": "vja_organic",
+            "name": {
+                "English": "Benz Circle Organic & Fresh Hub",
+                "Hindi": "बेंज सर्कल ऑर्गेनिक एंड फ्रेश हब",
+                "Telugu": "బెంజ్ సర్కిల్ ఆర్గానిక్ & ఫ్రెష్ హబ్"
+            },
+            "rating": 4.6,
+            "reviews_count": 94,
+            "distance": 1.9,
+            "address": {
+                "English": "Ring Road, Benz Circle, Vijayawada",
+                "Hindi": "रिंग रोड, बेंज सर्कल, विजयवाड़ा",
+                "Telugu": "రింగ్ రోడ్, బెంజ్ సర్కిల్, విజయవాడ"
+            },
+            "timings": {
+                "English": "Open Now: 8:00 AM - 9:00 PM",
+                "Hindi": "अभी खुला है: सुबह 8:00 - रात 9:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 8:00 - రాత్రి 9:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Hydroponic Greens, Exotic Herbs, Organic Tomato & Chilli",
+                "Hindi": "हाइड्रोपोनिक साग, विदेशी जड़ी-बूटियाँ, जैविक टमाटर और मिर्च",
+                "Telugu": "హైడ్రోపోనిక్ ఆకుకూరలు, ఆర్గానిక్ టొమాటో & మిర్చి"
+            },
+            "contact": "+91 91234 56780",
+            "tags": ["Retail", "Organic", "Delivery"],
+            "city": "Vijayawada"
+        },
+        # Visakhapatnam
+        {
+            "id": "vizag_mvp",
+            "name": {
+                "English": "MVP Colony Rythu Bazar",
+                "Hindi": "एमवीपी कॉलोनी रायथु बाजार",
+                "Telugu": "MVP కాలనీ రైతు బజార్"
+            },
+            "rating": 4.6,
+            "reviews_count": 480,
+            "distance": 1.1,
+            "address": {
+                "English": "MVP Sector 4, MVP Colony, Visakhapatnam",
+                "Hindi": "एमवीपी सेक्टर 4, एमवीपी कॉलोनी, विशाखापत्तनम",
+                "Telugu": "MVP సెక్టార్ 4, MVP కాలనీ, విశాఖపట్నం"
+            },
+            "timings": {
+                "English": "Open Now: 5:30 AM - 1:30 PM, 4:00 PM - 8:30 PM",
+                "Hindi": "अभी खुला है: सुबह 5:30 - दोपहर 1:30, शाम 4:00 - रात 8:30",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 5:30 - మధ్యాహ్నం 1:30, సాయంత్రం 4:00 - రాత్రి 8:30"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Fresh Local Vegetables, Tomato, Beans, Cauliflower, Carrots",
+                "Hindi": "ताजी स्थानीय सब्जियां, टमाटर, बीन्स, फूलगोभी, गाजर",
+                "Telugu": "తాజా స్థానిక కూరగాయలు, టొమాటో, బీన్స్, క్యాలీఫ్లవర్, క్యారెట్లు"
+            },
+            "contact": "+91 89127 12345",
+            "tags": ["Retail", "Wholesale"],
+            "city": "Visakhapatnam"
+        },
+        # Kurnool
+        {
+            "id": "kurnool_rythu",
+            "name": {
+                "English": "Kurnool Rythu Bazar",
+                "Hindi": "कुरनूल रायथु बाजार",
+                "Telugu": "కర్నూలు రైతు బజార్"
+            },
+            "rating": 4.3,
+            "reviews_count": 220,
+            "distance": 0.9,
+            "address": {
+                "English": "Near Old Bus Stand, Kurnool HO, Kurnool",
+                "Hindi": "पुराने बस स्टैंड के पास, कुरनूल एचओ, कुरनूल",
+                "Telugu": "పాత బస్ స్టాండ్ దగ్గర, కర్నూలు HO, కర్నూలు"
+            },
+            "timings": {
+                "English": "Open Now: 5:00 AM - 2:00 PM, 4:00 PM - 8:00 PM",
+                "Hindi": "अभी खुला है: सुबह 5:00 - दोपहर 2:00, शाम 4:00 - रात 8:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 5:00 - మధ్యాహ్నం 2:00, సాయంత్రం 4:00 - రాత్రి 8:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Fresh Onions, Tomato, Chilli, Ladies Finger, Leafy Greens",
+                "Hindi": "ताजा प्याज, टमाटर, मिर्च, भिंडी, पत्तेदार सब्जियां",
+                "Telugu": "తాజా ఉల్లిపాయలు, టొమాటో, మిర్చి, బెండకాయ, ఆకుకూరలు"
+            },
+            "contact": "+91 85182 45678",
+            "tags": ["Wholesale", "Retail"],
+            "city": "Kurnool"
+        },
+        # Hyderabad
+        {
+            "id": "hyd_gudi",
+            "name": {
+                "English": "Gudimalkapur Flower & Vegetable Market",
+                "Hindi": "गुडीमलकापुर फूल और सब्जी मंडी",
+                "Telugu": "గుడిమల్కాపూర్ పూల & కూరగాయల మార్కెట్"
+            },
+            "rating": 4.3,
+            "reviews_count": 780,
+            "distance": 3.5,
+            "address": {
+                "English": "Gudimalkapur, Mehdipatnam, Hyderabad",
+                "Hindi": "गुडीमलकापुर, मेहदीपट्टनम, हैदराबाद",
+                "Telugu": "గుడిమల్కాపూర్, మెహిదీపట్నం, హైదరాబాద్"
+            },
+            "timings": {
+                "English": "Open Now: 4:00 AM - 10:00 PM",
+                "Hindi": "अभी खुला है: सुबह 4:00 - रात 10:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 4:00 - రాత్రి 10:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "All Types of Fresh Green Vegetables, Tomatoes, Capsicum, Beans",
+                "Hindi": "सभी प्रकार की ताजी हरी सब्जियां, टमाटर, शिमला मिर्च, बीन्स",
+                "Telugu": "అన్ని రకాల తాజా పచ్చటి కూరగాయలు, టొమాటోలు, క్యాప్సికమ్, బీన్స్"
+            },
+            "contact": "+91 40235 67890",
+            "tags": ["Wholesale", "Retail"],
+            "city": "Hyderabad"
+        },
+        {
+            "id": "hyd_bowen",
+            "name": {
+                "English": "Bowenpally Wholesale Agricultural Market",
+                "Hindi": "बोवेनपल्ली थोक कृषि मंडी",
+                "Telugu": "బోయిన్‌పల్లి హోల్‌సేల్ వ్యవసాయ మార్కెట్"
+            },
+            "rating": 4.2,
+            "reviews_count": 920,
+            "distance": 6.8,
+            "address": {
+                "English": "Bowenpally, Secunderabad, Hyderabad",
+                "Hindi": "बोवेनपल्ली, सिकंदराबाद, हैदराबाद",
+                "Telugu": "బోయిన్‌పల్లి, సికింద్రాబాద్, హైదరాబాద్"
+            },
+            "timings": {
+                "English": "Open Now: 24 Hours",
+                "Hindi": "अभी खुला है: 24 घंटे",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: 24 గంటలు"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Bulk Potato, Onion, Tomato, Cauliflower, Ridge Gourd",
+                "Hindi": "थोक आलू, प्याज, टमाटर, फूलगोभी, तोरई",
+                "Telugu": "బల్క్ బంగాళాదుంప, ఉల్లిపాయ, టొమాటో, క్యాలీఫ్లవర్, బీరకాయ"
+            },
+            "contact": "+91 90001 98765",
+            "tags": ["Wholesale"],
+            "city": "Hyderabad"
+        },
+        {
+            "id": "hyd_organic",
+            "name": {
+                "English": "Jubilee Hills Organic Farm Direct",
+                "Hindi": "जुबली हिल्स ऑर्गेनिक फार्म डायरेक्ट",
+                "Telugu": "జుబ్లీహిల్స్ ఆర్గానిక్ ఫార్మ్ డైరెక్ట్"
+            },
+            "rating": 4.8,
+            "reviews_count": 120,
+            "distance": 4.2,
+            "address": {
+                "English": "Road No 36, Jubilee Hills, Hyderabad",
+                "Hindi": "रोड नंबर 36, जुबली हिल्स, हैदराबाद",
+                "Telugu": "రోడ్ నంబర్ 36, జుబ్లీహిల్స్, హైదరాబాద్"
+            },
+            "timings": {
+                "English": "Open Now: 8:00 AM - 8:30 PM",
+                "Hindi": "अभी खुला है: सुबह 8:00 - रात 8:30",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 8:00 - రాత్రి 8:30"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Organic Leafy Vegetables, Certified Fruits & Vegetables, Cold Pressed Juices",
+                "Hindi": "जैविक पत्तेदार सब्जियां, प्रमाणित फल और सब्जियां, कोल्ड प्रेस्ड जूस",
+                "Telugu": "సేంద్రీయ ఆకుకూరలు, ధృవీకరించబడిన పండ్లు & కూరగాయలు"
+            },
+            "contact": "+91 99887 11223",
+            "tags": ["Retail", "Organic", "Delivery"],
+            "city": "Hyderabad"
+        },
+        # Warangal
+        {
+            "id": "wl_laxmi",
+            "name": {
+                "English": "Laxmipuram Wholesale Market",
+                "Hindi": "लक्ष्मीपुरम थोक सब्जी मंडी",
+                "Telugu": "లక్ష్మీపురం హోల్‌సేల్ మార్కెట్"
+            },
+            "rating": 4.3,
+            "reviews_count": 310,
+            "distance": 1.4,
+            "address": {
+                "English": "Laxmipuram, Warangal HO, Warangal",
+                "Hindi": "लक्ष्मीपुरम, वारंगल एचओ, वारंगल",
+                "Telugu": "లక్ష్మీపురం, వరంగల్ HO, వరంగల్"
+            },
+            "timings": {
+                "English": "Open Now: 4:00 AM - 3:00 PM",
+                "Hindi": "अभी खुला है: सुबह 4:00 - दोपहर 3:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 4:00 - మధ్యాహ్నం 3:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Chilli, Tomato, Onion, Brinjal, Gourd varieties",
+                "Hindi": "मिर्च, टमाटर, प्याज, बैंगन, लौकी की किस्में",
+                "Telugu": "మిర్చి, టొమాటో, ఉల్లిపాయ, వంకాయ, ఆనపకాయ రకాలు"
+            },
+            "contact": "+91 87024 12345",
+            "tags": ["Wholesale", "Retail"],
+            "city": "Warangal"
+        },
+        {
+            "id": "wl_organic",
+            "name": {
+                "English": "Hunter Road Organic Farmers Bazaar",
+                "Hindi": "हंटर रोड ऑर्गेनिक फार्मर्स बाजार",
+                "Telugu": "హంటర్ రోడ్ ఆర్గానిక్ ఫార్మర్స్ బజార్"
+            },
+            "rating": 4.5,
+            "reviews_count": 62,
+            "distance": 3.1,
+            "address": {
+                "English": "Hunter Road, Hanamkonda, Warangal",
+                "Hindi": "हंटर रोड, हनमकोंडा, वारंगल",
+                "Telugu": "హంటర్ రోడ్, హన్మకొండ, వరంగల్"
+            },
+            "timings": {
+                "English": "Open Now: 6:00 AM - 7:00 PM",
+                "Hindi": "अभी खुला है: सुबह 6:00 - शाम 7:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 6:00 - సాయంత్రం 7:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Organic Spinach, Mint, Coriander, Ladies Finger, Tomato",
+                "Hindi": "जैविक पालक, पुदीना, धनिया, भिंडी, टमाटर",
+                "Telugu": "సేంద్రీయ పాలకూర, పుదీనా, కొత్తిమీర, బెండకాయ, టొమాటో"
+            },
+            "contact": "+91 76543 99988",
+            "tags": ["Retail", "Organic", "Delivery"],
+            "city": "Warangal"
+        },
+        # Nizamabad
+        {
+            "id": "nzb_gunj",
+            "name": {
+                "English": "Gunj Vegetable Market",
+                "Hindi": "गंज सब्जी मंडी",
+                "Telugu": "గంజ్ కూరగాయల మార్కెట్"
+            },
+            "rating": 4.2,
+            "reviews_count": 130,
+            "distance": 0.7,
+            "address": {
+                "English": "Gunj Road, Nizamabad HO, Nizamabad",
+                "Hindi": "गंज रोड, निजामाबाद एचओ, निजामाबाद",
+                "Telugu": "గంజ్ రోడ్, నిజామాబాద్ HO, నిజామాబాద్"
+            },
+            "timings": {
+                "English": "Open Now: 5:00 AM - 2:00 PM",
+                "Hindi": "अभी खुला है: सुबह 5:00 - दोपहर 2:00",
+                "Telugu": "ప్రస్తుతం తెరిచి ఉంది: ఉదయం 5:00 - మధ్యాహ్నం 2:00"
+            },
+            "is_open": True,
+            "specialties": {
+                "English": "Tomato, Chilli, Onion, Potato, Ridge Gourd",
+                "Hindi": "टमाटर, मिर्च, प्याज, आलू, तोरई",
+                "Telugu": "టొమాటో, మిర్చి, ఉల్లిపాయ, బంగాళాదుంప, బీరకాయ"
+            },
+            "contact": "+91 84622 98765",
+            "tags": ["Wholesale", "Retail"],
+            "city": "Nizamabad"
+        }
+    ]
+
+    # Filter by city
+    filtered = [m for m in raw_markets if m["city"].lower() == city.lower()]
+    if not filtered:
+        # Fallback to Guntur if no match
+        filtered = [m for m in raw_markets if m["city"].lower() == "guntur"]
+
+    # Localize names and addresses
+    formatted = []
+    for m in filtered:
+        formatted.append({
+            "id": m["id"],
+            "name": m["name"].get(lang, m["name"]["English"]),
+            "rating": m["rating"],
+            "reviews_count": m["reviews_count"],
+            "distance": m["distance"],
+            "address": m["address"].get(lang, m["address"]["English"]),
+            "timings": m["timings"].get(lang, m["timings"]["English"]),
+            "is_open": m["is_open"],
+            "specialties": m["specialties"].get(lang, m["specialties"]["English"]),
+            "contact": m["contact"],
+            "tags": m["tags"],
+            "city": m["city"]
+        })
+    return formatted
+
