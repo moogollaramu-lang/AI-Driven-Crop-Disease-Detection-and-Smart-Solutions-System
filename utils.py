@@ -542,3 +542,202 @@ def get_community_connectivity(lang="English", region=None):
             "contact": c["contact"]
         })
     return formatted_contacts
+
+
+def get_nearby_vendors(lang="English", region=None):
+    raw_vendors = [
+        # Andhra Pradesh
+        {
+            "region": "Andhra Pradesh",
+            "name": {"English": "Sri Srinivasa Veg Wholesalers", "Hindi": "श्री श्रीनिवास वेज होलसेलर्स", "Telugu": "శ్రీ శ్రీనివాస వెజ్ హోల్‌సేలర్స్"},
+            "market": {"English": "Guntur APMC Market Yard", "Hindi": "गुंटूर एपीएमसी मार्केट यार्ड", "Telugu": "గుంటూరు APMC మార్కెట్ యార్డ్"},
+            "category_en": "Wholesale",
+            "category": {"English": "Bulk Vegetable Distributor", "Hindi": "थोक सब्जी वितरक", "Telugu": "భారీ కూరగాయల పంపిణీదారు"},
+            "products": {"English": "Tomatoes, Potatoes, Onions, Green Chillies, Cauliflower", "Hindi": "टमाटर, आलू, प्याज, हरी मिर्च, फूलगोभी", "Telugu": "టొమాటోలు, బంగాళాదుంపలు, ఉల్లిపాయలు, పచ్చిమిర్చి, క్యాలీఫ్లవర్"},
+            "rating": "4.8",
+            "rating_count": "145+",
+            "distance": "1.2 km",
+            "contact": "+91 98765 01234",
+            "open_hours": "04:00 AM - 04:00 PM",
+            "is_open": True,
+            "verified": True,
+            "map_link": "https://maps.google.com/?q=Guntur+APMC+Market"
+        },
+        {
+            "region": "Andhra Pradesh",
+            "name": {"English": "Amaravati Organic Farm Supplies", "Hindi": "अमरावती ऑर्गेनिक फार्म सप्लाई", "Telugu": "అమరావతి ఆర్గానిక్ ఫార్మ్ సప్లైస్"},
+            "market": {"English": "Mangalagiri Vegetable Bazaar", "Hindi": "मंगलगिरी सब्जी बाजार", "Telugu": "మంగళగిరి కూరగాయల బజార్"},
+            "category_en": "Organic",
+            "category": {"English": "Certified Organic & Farm Fresh", "Hindi": "प्रमाणित जैविक और ताजा फार्म", "Telugu": "ధృవీకరించబడిన సేంద్రీయ & తాజా పంటలు"},
+            "products": {"English": "Bell Peppers, Broccoli, Organic Tomatoes, Carrots, Beans", "Hindi": "शिमला मिर्च, ब्रोकली, जैविक टमाटर, गाजर, बीन्स", "Telugu": "బెల్ పెప్పర్స్, బ్రోకలీ, సేంద్రీయ టొమాటోలు, క్యారెట్లు, చిక్కుడుకాయలు"},
+            "rating": "4.9",
+            "rating_count": "88+",
+            "distance": "2.5 km",
+            "contact": "+91 87654 98765",
+            "open_hours": "06:00 AM - 08:00 PM",
+            "is_open": True,
+            "verified": True,
+            "map_link": "https://maps.google.com/?q=Mangalagiri+Vegetable+Market"
+        },
+        {
+            "region": "Andhra Pradesh",
+            "name": {"English": "Rayalaseema Root Veg Traders", "Hindi": "रायलसीमा रूट वेज ट्रेडर्स", "Telugu": "రాయలసీమ రూట్ వెజ్ ట్రేడర్స్"},
+            "market": {"English": "Kurnool New Vegetable Yard", "Hindi": "कुरनूल न्यू वेजीटेबल यार्ड", "Telugu": "కర్నూలు న్యూ వెజిటబుల్ యార్డ్"},
+            "category_en": "Wholesale",
+            "category": {"English": "Root Vegetable Wholesale Specialists", "Hindi": "जड़ वाली सब्जियों के थोक विशेषज्ञ", "Telugu": "దుంప కూరగాయల హోల్‌సేల్ నిపుణులు"},
+            "products": {"English": "Sweet Potatoes, Radish, Beetroot, Onions, Colocasia", "Hindi": "शकरकंद, मूली, चुकंदर, प्याज, अरबी", "Telugu": "చిలగడదుంపలు, ముల్లంగి, బీట్‌రూట్, ఉల్లిపాయలు, చామదుంపలు"},
+            "rating": "4.6",
+            "rating_count": "112+",
+            "distance": "4.0 km",
+            "contact": "+91 76543 01298",
+            "open_hours": "05:00 AM - 06:00 PM",
+            "is_open": True,
+            "verified": True,
+            "map_link": "https://maps.google.com/?q=Kurnool+Vegetable+Market"
+        },
+        {
+            "region": "Andhra Pradesh",
+            "name": {"English": "Andhra Leafy Greens Direct", "Hindi": "आंध्र लीफी ग्रीन्स डायरेक्ट", "Telugu": "ఆంధ్ర లీఫీ గ్రీన్స్ డైరెక్ట్"},
+            "market": {"English": "Vijayawada Rythu Bazaar", "Hindi": "विजयवाड़ा रायथु बाजार", "Telugu": "విజయవాడ రైతు బజార్"},
+            "category_en": "Leafy Greens",
+            "category": {"English": "Fresh Green Leaves & Herbs", "Hindi": "ताजा हरी पत्तियां और जड़ी-बूटियां", "Telugu": "తాజా ఆకుకూరలు & పుదీనా, కొత్తిమీర"},
+            "products": {"English": "Spinach, Amaranth, Coriander, Mint, Methi (Fenugreek)", "Hindi": "पालक, चौलाई, धनिया, पुदीना, मेथी", "Telugu": "పాలకూర, తోటకూర, కొత్తిమీర, పుదీనా, మెంతికూర"},
+            "rating": "4.7",
+            "rating_count": "94+",
+            "distance": "1.8 km",
+            "contact": "+91 65432 09876",
+            "open_hours": "05:00 AM - 01:00 PM",
+            "is_open": True,
+            "verified": False,
+            "map_link": "https://maps.google.com/?q=Vijayawada+Rythu+Bazaar"
+        },
+        
+        # Telangana
+        {
+            "region": "Telangana",
+            "name": {"English": "Telangana Fresh Greens", "Hindi": "तेलंगाना फ्रेश ग्रीन्स", "Telugu": "తెలంగాణ ఫ్రెష్ గ్రీన్స్"},
+            "market": {"English": "Hanamkonda Subji Mandi", "Hindi": "हनमकोंडा सब्जी मंडी", "Telugu": "హన్మకొండ సబ్జీ మండి"},
+            "category_en": "Leafy Greens",
+            "category": {"English": "Local Green Vegetables & Chillies", "Hindi": "स्थानीय हरी सब्जियां और मिर्च", "Telugu": "స్థానిక పచ్చని కూరగాయలు & మిర్చి"},
+            "products": {"English": "Green Chillies, Curry Leaves, Mint, Spinach, Ridge Gourd", "Hindi": "हरी मिर्च, कड़ी पत्ता, पुदीना, पालक, तोरई", "Telugu": "పచ్చిమిర్చి, కరివేపాకు, పుదీనా, పాలకూర, బీరకాయ"},
+            "rating": "4.5",
+            "rating_count": "65+",
+            "distance": "2.7 km",
+            "contact": "+91 87024 12345",
+            "open_hours": "06:00 AM - 01:00 PM",
+            "is_open": True,
+            "verified": True,
+            "map_link": "https://maps.google.com/?q=Hanamkonda+Subji+Mandi"
+        },
+        {
+            "region": "Telangana",
+            "name": {"English": "Deccan Organic Veg Mall", "Hindi": "डेक्कन ऑर्गेनिक वेज मॉल", "Telugu": "డెక్కన్ ఆర్గానిక్ వెజ్ మాల్"},
+            "market": {"English": "Malakpet Veg Yard, Hyderabad", "Hindi": "मलकपेट वेज यार्ड, हैदराबाद", "Telugu": "మలక్‌పేట వెజ్ యార్డ్, హైదరాబాద్"},
+            "category_en": "Organic",
+            "category": {"English": "Premium & Organic Vegetables", "Hindi": "प्रीमियम और जैविक सब्जियां", "Telugu": "ప్రీమియం & సేంద్రీయ కూరగాయలు"},
+            "products": {"English": "Capsicum, Baby Corn, Mushrooms, Broccoli, Carrots", "Hindi": "शिमला मिर्च, बेबी कॉर्न, मशरूम, ब्रोकली, गाजर", "Telugu": "క్యాప్సికమ్, బేబీ కార్న్, పుట్టగొడుగులు, బ్రోకలీ, క్యారెట్లు"},
+            "rating": "4.8",
+            "rating_count": "130+",
+            "distance": "4.2 km",
+            "contact": "+91 98888 77777",
+            "open_hours": "08:00 AM - 09:00 PM",
+            "is_open": True,
+            "verified": True,
+            "map_link": "https://maps.google.com/?q=Malakpet+Veg+Yard+Hyderabad"
+        },
+        {
+            "region": "Telangana",
+            "name": {"English": "Secunderabad Retail Vegetable Center", "Hindi": "सिकंदराबाद खुदरा सब्जी केंद्र", "Telugu": "సికింద్రాబాద్ రిటైల్ కూరగాయల కేంద్రం"},
+            "market": {"English": "Monda Market, Secunderabad", "Hindi": "मोंडा मार्केट, सिकंदराबाद", "Telugu": "మొండా మార్కెట్, సికింద్రాబాద్"},
+            "category_en": "Retail",
+            "category": {"English": "Daily Kitchen Vegetables & Lemon", "Hindi": "दैनिक रसोई सब्जियां और नींबू", "Telugu": "రోజువారీ కిచెన్ కూరగాయలు & నిమ్మకాయలు"},
+            "products": {"English": "Tomatoes, Onions, Ginger, Garlic, Lemons, Okra", "Hindi": "टमाटर, प्याज, अदरक, लहसुन, नींबू, भिंडी", "Telugu": "టొమాటోలు, ఉల్లిపాయలు, అల్లం, వెల్లుల్లి, నిమ్మకాయలు, బెండకాయలు"},
+            "rating": "4.3",
+            "rating_count": "42+",
+            "distance": "1.5 km",
+            "contact": "+91 90001 99999",
+            "open_hours": "07:00 AM - 08:00 PM",
+            "is_open": True,
+            "verified": False,
+            "map_link": "https://maps.google.com/?q=Monda+Market+Secunderabad"
+        },
+        
+        # Default / Fallback
+        {
+            "region": "Default",
+            "name": {"English": "Metro Fresh Veg Traders", "Hindi": "मेट्रो फ्रेश वेज ट्रेडर्स", "Telugu": "మెట్రో ఫ్రెష్ వెజ్ ట్రేడర్స్"},
+            "market": {"English": "Central Vegetable Market", "Hindi": "केंद्रीय सब्जी बाजार", "Telugu": "కేంద్ర కూరగాయల మార్కెట్"},
+            "category_en": "Wholesale",
+            "category": {"English": "All-in-One Vegetable Wholesale", "Hindi": "ऑल-इन-वन सब्जी थोक विक्रेता", "Telugu": "ఆల్ ఇన్ వన్ కూరగాయల హోల్‌సేల్"},
+            "products": {"English": "Potatoes, Tomatoes, Onions, Green Peas, Carrots", "Hindi": "आलू, टमाटर, प्याज, हरी मटर, गाजर", "Telugu": "బంగాళాదుంపలు, టొమాటోలు, ఉల్లిపాయలు, పచ్చి బఠానీలు, క్యారెట్లు"},
+            "rating": "4.7",
+            "rating_count": "210+",
+            "distance": "2.0 km",
+            "contact": "+91 92222 33333",
+            "open_hours": "06:00 AM - 07:00 PM",
+            "is_open": True,
+            "verified": True,
+            "map_link": "https://maps.google.com/?q=Central+Vegetable+Market"
+        },
+        {
+            "region": "Default",
+            "name": {"English": "National Agri Veg Distributors", "Hindi": "नेशनल एग्री वेज डिस्ट्रीब्यूटर्स", "Telugu": "నేషనల్ అగ్రి వెజ్ డిస్ట్రిబ్యూటర్స్"},
+            "market": {"English": "Subji Mandi Yard 2", "Hindi": "सब्जी मंडी यार्ड 2", "Telugu": "సబ్జీ మండి యార్డ్ 2"},
+            "category_en": "Wholesale",
+            "category": {"English": "Seasonal & Root Vegetables", "Hindi": "मौसमी और जड़ वाली सब्जियां", "Telugu": "సీజనల్ & దుంప కూరగాయలు"},
+            "products": {"English": "Radish, Beetroot, Sweet Potato, Colocasia", "Hindi": "मूली, चुकंदर, शकरकंद, अरबी", "Telugu": "ముల్లంగి, బీట్‌రూట్, చిలగడదుంప, చామదుంప"},
+            "rating": "4.4",
+            "rating_count": "55+",
+            "distance": "3.5 km",
+            "contact": "+91 93333 55555",
+            "open_hours": "05:00 AM - 04:00 PM",
+            "is_open": True,
+            "verified": True,
+            "map_link": "https://maps.google.com/?q=Subji+Mandi+Yard"
+        },
+        {
+            "region": "Default",
+            "name": {"English": "Green Field Organics", "Hindi": "ग्रीन फील्ड ऑर्गेनिक्स", "Telugu": "గ్రీన్ ఫీల్డ్ ఆర్గానిక్స్"},
+            "market": {"English": "Local Farmers Co-operative Market", "Hindi": "स्थानीय किसान सहकारी बाजार", "Telugu": "స్థానిక రైతు సహకార మార్కెట్"},
+            "category_en": "Organic",
+            "category": {"English": "Certified Organic Veg Supplies", "Hindi": "प्रमाणित जैविक सब्जी आपूर्ति", "Telugu": "ధృవీకరించబడిన సేంద్రీయ కూరగాయలు"},
+            "products": {"English": "Organic Spinach, Gourds, Cucumber, Beans", "Hindi": "जैविक पालक, लौकी, कद्दू, ककड़ी, बीन्स", "Telugu": "సేంద్రీయ పాలకూర, ఆనపకాయ, కీరా, చిక్కుడుకాయలు"},
+            "rating": "4.6",
+            "rating_count": "79+",
+            "distance": "1.2 km",
+            "contact": "+91 94444 66666",
+            "open_hours": "07:00 AM - 06:00 PM",
+            "is_open": True,
+            "verified": False,
+            "map_link": "https://maps.google.com/?q=Farmers+Cooperative+Market"
+        }
+    ]
+
+    # Filter by region
+    if region:
+        filtered = [v for v in raw_vendors if region.lower() in v["region"].lower()]
+        if not filtered:
+            filtered = [v for v in raw_vendors if v["region"] == "Default"]
+    else:
+        filtered = [v for v in raw_vendors if v["region"] == "Default"]
+
+    # Format output according to language
+    formatted = []
+    for v in filtered:
+        formatted.append({
+            "name": v["name"].get(lang, v["name"]["English"]),
+            "market": v["market"].get(lang, v["market"]["English"]),
+            "category_en": v["category_en"],
+            "category": v["category"].get(lang, v["category"]["English"]),
+            "products": v["products"].get(lang, v["products"]["English"]),
+            "rating": v["rating"],
+            "rating_count": v["rating_count"],
+            "distance": v["distance"],
+            "contact": v["contact"],
+            "open_hours": v["open_hours"],
+            "is_open": v["is_open"],
+            "verified": v["verified"],
+            "map_link": v["map_link"]
+        })
+    return formatted
+
