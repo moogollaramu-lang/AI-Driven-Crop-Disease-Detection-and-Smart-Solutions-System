@@ -619,32 +619,105 @@ with col_left:
                         st.markdown(disease_card_html, unsafe_allow_html=True)
                             
                 elif enc_tab == t['enc_t2']:
-                    st.markdown(f"### {t['enc_s1_title']}")
-                    st.write(t['enc_s1_desc'])
+                    st.markdown(f"## {t['enc_t2']}")
                     
-                    # Premium styled Soil Health Card
-                    soil_html = f"""
-<div class='preventive-block' style='margin-top: 20px;'>
-    <h4>🌱 {t['enc_t2'].upper()}</h4>
-    <ul style='padding-left: 20px; margin-bottom: 0;'>
+                    # pH Management Card
+                    st.markdown(f"""
+<div class='preventive-block' style='margin-top: 15px;'>
+    <h4>🌱 {t['enc_s1_title']}</h4>
+    <p style='font-size: 0.95rem; margin-bottom: 10px;'>{t['enc_s1_desc']}</p>
+    <ul style='padding-left: 20px; margin-bottom: 0; font-size: 0.9rem;'>
         <li>{t['enc_s1_b1']}</li>
         <li>{t['enc_s1_b2']}</li>
     </ul>
 </div>
-                    """
-                    st.markdown(soil_html, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
+                    
+                    # Organic Matter Card
+                    st.markdown(f"""
+<div class='preventive-block' style='margin-top: 15px;'>
+    <h4>🍂 {t['enc_s2_title']}</h4>
+    <p style='font-size: 0.95rem; margin-bottom: 10px;'>{t['enc_s2_desc']}</p>
+    <ul style='padding-left: 20px; margin-bottom: 0; font-size: 0.9rem;'>
+        <li>{t['enc_s2_b1']}</li>
+        <li>{t['enc_s2_b2']}</li>
+    </ul>
+</div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Cover Crops Card
+                    st.markdown(f"""
+<div class='preventive-block' style='margin-top: 15px;'>
+    <h4>🍀 {t['enc_s3_title']}</h4>
+    <p style='font-size: 0.95rem; margin-bottom: 10px;'>{t['enc_s3_desc']}</p>
+    <ul style='padding-left: 20px; margin-bottom: 0; font-size: 0.9rem;'>
+        <li>{t['enc_s3_b1']}</li>
+        <li>{t['enc_s3_b2']}</li>
+    </ul>
+</div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Soil Testing Card
+                    st.markdown(f"""
+<div class='preventive-block' style='margin-top: 15px; margin-bottom: 10px;'>
+    <h4>🔬 {t['enc_s4_title']}</h4>
+    <p style='font-size: 0.95rem; margin-bottom: 10px;'>{t['enc_s4_desc']}</p>
+    <ul style='padding-left: 20px; margin-bottom: 0; font-size: 0.9rem;'>
+        <li>{t['enc_s4_b1']}</li>
+    </ul>
+</div>
+                    """, unsafe_allow_html=True)
                     
                 else:
-                    st.markdown(f"### {t['enc_w1_title']}")
+                    st.markdown(f"## {t['enc_t3']}")
                     
-                    # Premium styled Water Management Card
-                    water_html = f"""
-<div class='solution-block' style='margin-top: 20px;'>
-    <h4>💧 {t['enc_t3'].upper()}</h4>
-    <p>{t['enc_w1_desc']}</p>
+                    # Drip Irrigation Card
+                    st.markdown(f"""
+<div class='solution-block' style='margin-top: 15px;'>
+    <h4>💧 {t['enc_w1_title']}</h4>
+    <p style='font-size: 0.95rem; margin-bottom: 10px;'>{t['enc_w1_desc']}</p>
+    <ul style='padding-left: 20px; margin-bottom: 0; font-size: 0.9rem;'>
+        <li>{t['enc_w1_b1']}</li>
+        <li>{t['enc_w1_b2']}</li>
+    </ul>
 </div>
-                    """
-                    st.markdown(water_html, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
+                    
+                    # Mulching Card
+                    st.markdown(f"""
+<div class='solution-block' style='margin-top: 15px;'>
+    <h4>🌾 {t['enc_w2_title']}</h4>
+    <p style='font-size: 0.95rem; margin-bottom: 10px;'>{t['enc_w2_desc']}</p>
+    <ul style='padding-left: 20px; margin-bottom: 0; font-size: 0.9rem;'>
+        <li>{t['enc_w2_b1']}</li>
+        <li>{t['enc_w2_b2']}</li>
+    </ul>
+</div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Rainwater Harvesting Card
+                    st.markdown(f"""
+<div class='solution-block' style='margin-top: 15px;'>
+    <h4>🌧️ {t['enc_w3_title']}</h4>
+    <p style='font-size: 0.95rem; margin-bottom: 10px;'>{t['enc_w3_desc']}</p>
+    <ul style='padding-left: 20px; margin-bottom: 0; font-size: 0.9rem;'>
+        <li>{t['enc_w3_b1']}</li>
+        <li>{t['enc_w3_b2']}</li>
+    </ul>
+</div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Smart Scheduling Card
+                    st.markdown(f"""
+<div class='solution-block' style='margin-top: 15px; margin-bottom: 10px;'>
+    <h4>📅 {t['enc_w4_title']}</h4>
+    <p style='font-size: 0.95rem; margin-bottom: 10px;'>{t['enc_w4_desc']}</p>
+    <ul style='padding-left: 20px; margin-bottom: 0; font-size: 0.9rem;'>
+        <li>{t['enc_w4_b1']}</li>
+        <li>{t['enc_w4_b2']}</li>
+    </ul>
+</div>
+                    """, unsafe_allow_html=True)
 
         
         elif nav_selection == "FIELD HUB":
