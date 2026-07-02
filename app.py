@@ -52,8 +52,8 @@ div[data-testid="stStatusWidget"] {{ display: none !important; }}
 
 /* Premium Styled Specimen Image Preview */
 [data-testid="stImage"] img {{
-    max-width: 240px !important;
-    max-height: 240px !important;
+    width: 220px !important;
+    height: 220px !important;
     object-fit: cover !important;
     border-radius: 16px !important;
     border: 2px solid #3c5a45 !important;
