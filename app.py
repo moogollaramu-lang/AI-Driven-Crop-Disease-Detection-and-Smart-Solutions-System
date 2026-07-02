@@ -381,7 +381,6 @@ with col_left:
             uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
-                st.image(image, use_container_width=True, caption="Main Specimen")
         else:
             try:
                 import streamlit.components.v1 as components
@@ -393,14 +392,6 @@ with col_left:
                 # Check if we already have a captured image in session state
                 if "rear_captured_image" in st.session_state and st.session_state.rear_captured_image is not None:
                     image = st.session_state.rear_captured_image
-                    st.image(image, use_container_width=True, caption="Main Specimen (Camera)")
-                    
-                    if st.button("🔄 Retake Photo", key="retake_rear"):
-                        st.session_state.rear_captured_image = None
-                        st.session_state.last_file = None
-                        if "current_analysis" in st.session_state:
-                            del st.session_state.current_analysis
-                        st.rerun()
                 else:
                     rear_camera_file = local_back_camera_input(height=350, width=450, facingMode="environment", key="rear_camera_widget")
                     if rear_camera_file:
@@ -420,6 +411,19 @@ with col_left:
                         st.rerun()
             except Exception as e:
                 st.error(f"Error loading camera component: {e}")
+
+    # Render image preview UNDER the white box container
+    if image is not None:
+        if input_type == "Upload File":
+            st.image(image, use_container_width=True, caption="Main Specimen")
+        else:
+            st.image(image, use_container_width=True, caption="Main Specimen (Camera)")
+            if st.button("🔄 Retake Photo", key="retake_rear"):
+                st.session_state.rear_captured_image = None
+                st.session_state.last_file = None
+                if "current_analysis" in st.session_state:
+                    del st.session_state.current_analysis
+                st.rerun()
     
 
 
