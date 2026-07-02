@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 from translations import TRANSLATIONS
-from utils import is_leaf, predict_disease, get_recommendations, get_weather
+from utils import is_leaf, predict_disease, get_recommendations, get_weather, get_mandi_rates, get_regional_crop_threats, get_community_connectivity
 import disease_database
 import time
 import base64
@@ -424,7 +424,7 @@ with col_left:
 
 
     with col_right:
-        nav_selection = st.pills("Navigation", ["ANALYZE", "ENCYCLOPEDIA", "SCHEMES", "HISTORY"], default="ANALYZE", label_visibility="collapsed")
+        nav_selection = st.pills("Navigation", ["ANALYZE", "ENCYCLOPEDIA", "SCHEMES", "HISTORY", "FIELD HUB"], default="ANALYZE", label_visibility="collapsed")
         
         if nav_selection == "ANALYZE" and image is None:
             st.markdown(f"""
@@ -743,6 +743,350 @@ with col_left:
                     """, unsafe_allow_html=True)
 
         
+
+        elif nav_selection == "FIELD HUB":
+            detected_region = st.session_state.get('detected_region', 'Andhra Pradesh')
+            detected_area = st.session_state.get('detected_area', 'Guntur')
+            
+            # Fetch Mandi rates, threats, and community connectivity
+            mandi_rates = get_mandi_rates(lang, region=detected_region)
+            threats = get_regional_crop_threats(lang, region=detected_region)
+            contacts = get_community_connectivity(lang, region=detected_region)
+            
+            alerts_data = {
+                "andhra": {
+                    "outbreak_title": {"English": "🚨 OUTBREAK ALERT", "Hindi": "🚨 प्रकोप चेतावनी", "Telugu": "🚨 తెగులు ఉధృతి హెచ్చరిక"},
+                    "outbreak_desc": {
+                        "English": "Rice Blast spores detected in adjacent blocks. Warm nights and high relative humidity (>90%) favor infection. Apply Tricyclazole preventatively.",
+                        "Hindi": "आस-पास के ब्लॉक में राइस ब्लास्ट (धान का झुलसा रोग) के बीजाणु पाए गए हैं। गर्म रातें और उच्च सापेक्ष आर्द्रता (>90%) संक्रमण के अनुकूल हैं। निवारक के रूप में ट्राइसाइक्लाजोल लगाएं।",
+                        "Telugu": "సమీప ప్రాంతాలలో వరి అగ్గి తెగులు (రైస్ బ్లాస్ట్) వ్యాప్తి కనుగొనబడింది. వెచ్చని రాత్రులు మరియు అధిక సాపేక్ష ఆర్ద్రత (>90%) తెగులు సోకడానికి అనుకూలంగా ఉంటాయి. ముందస్తు నివారణగా ట్రైసైక్లాజోల్ పిచికారీ చేయండి."
+                    },
+                    "outbreak_label": {"English": "📞 Local Expert Help desk:", "Hindi": "📞 स्थानीय विशेषज्ञ हेल्प डेस्क:", "Telugu": "📞 స్థానిక నిపుణుల సహాయ కేంద్రం:"},
+                    "outbreak_btn": {"English": "Call Dr. K. Rao", "Hindi": "डॉ. के. राव को कॉल करें", "Telugu": "డాక్టర్ కె. రావు కి కాల్ చేయి"},
+                    "outbreak_tel": "+919440123456",
+                
+                    "pest_title": {"English": "⚠️ PEST ADVISORY", "Hindi": "⚠️ कीट सलाह", "Telugu": "⚠️ పురుగుల ఉధృతి హెచ్చరిక"},
+                    "pest_desc": {
+                        "English": "Helicoverpa armigera (Cotton bollworm) moths observed in pheromone traps. Monitor squaring cotton plants closely.",
+                        "Hindi": "फेरोमोन जाल में हेलिकोवर्पा आर्मिगेरा (कपास के डोडे की सुंडी) पतंगे देखे गए हैं। कपास के पौधों की निगरानी करें।",
+                        "Telugu": "ఫెరమోన్ ఉచ్చులలో పత్తి కాయతొలుచు పురుగు కనుగొనబడింది. పత్తి మొక్కలను పరిశీలించండి."
+                    },
+                    "pest_label": {"English": "📞 Agriculture Helpline:", "Hindi": "📞 कृषि हेल्पलाइन:", "Telugu": "📞 వ్యవసాయ సహాయ కేంద్రం:"},
+                    "pest_btn": {"English": "Call Agri-Logistics", "Hindi": "एग्री-लॉजिस्टिक्स को कॉल करें", "Telugu": "అగ్రి-లాజిస్టిక్స్ కి కాల్ చేయి"},
+                    "pest_tel": "+918008123456",
+                
+                    "market_title": {"English": "✅ MARKET INSIGHT", "Hindi": "✅ बाजार अंतर्दृष्टि", "Telugu": "✅ మార్కెట్ సమాచారం"},
+                    "market_desc": {
+                        "English": "High demand for premium Chilli varieties (Guntur Sannam/334) in wholesale export markets. Prices are trending up.",
+                        "Hindi": "थोक निर्यात बाजारों में प्रीमियम मिर्च किस्मों की उच्च मांग है। कीमतें बढ़ रही हैं।",
+                        "Telugu": "హోల్‌సేల్ ఎగుమతి మార్కెట్లలో ప్రీమియం మిర్చి రకాలకు అధిక డిమాండ్ ఉంది. ధరలు పెరుగుతున్నాయి."
+                    },
+                    "market_label": {"English": "📞 Sell Crop Directly:", "Hindi": "📞 सीधे फसल बेचें:", "Telugu": "📞 పంటను నేరుగా విక్రయించండి:"},
+                    "market_btn": {"English": "Call wholesale Buyer", "Hindi": "थोक खरीदार को कॉल करें", "Telugu": "హోల్‌సేల్ కొనుగోలుదారు కి కాల్ చేయి"},
+                    "market_tel": "+917382910482"
+                },
+                "telangana": {
+                    "outbreak_title": {"English": "🚨 OUTBREAK ALERT", "Hindi": "🚨 प्रकोप चेतावनी", "Telugu": "🚨 తెగులు ఉధృతి హెచ్చరిక"},
+                    "outbreak_desc": {
+                        "English": "Severe infestation of Black Thrips reported in local chilli fields. Avoid excess nitrogenous fertilizers.",
+                        "Hindi": "स्थानीय मिर्च के खेतों में ब्लैक थ्रिप्स का गंभीर प्रकोप देखा गया है। अत्यधिक नाइट्रोजनयुक्त उर्वरकों से बचें।",
+                        "Telugu": "స్థానిక మిర్చి పొలాల్లో నల్ల తామర పురుగుల ఉధృతి తీవ్రంగా ఉంది. నత్రజని ఎరువుల వాడకాన్ని తగ్గించండి."
+                    },
+                    "outbreak_label": {"English": "📞 Expert Assistance:", "Hindi": "📞 विशेषज्ञ सहायता:", "Telugu": "📞 నిపుణుల సహాయం:"},
+                    "outbreak_btn": {"English": "Call Dr. G. Reddy", "Hindi": "डॉ. जी. रेड्डी को कॉल करें", "Telugu": "డాక్టర్ జి. రెడ్డి కి కాల్ చేయి"},
+                    "outbreak_tel": "+919848098765",
+                
+                    "pest_title": {"English": "⚠️ WEATHER ALERT", "Hindi": "⚠️ मौसम की चेतावनी", "Telugu": "⚠️ వాతావరణ హెచ్చరిక"},
+                    "pest_desc": {
+                        "English": "Rain showers expected in 48 hours. Postpone all foliar chemical sprays on Maize crops to avoid washing off.",
+                        "Hindi": "48 घंटों में बारिश की संभावना है। मक्का की फसलों पर सभी पर्णीय छिड़काव स्थगित करें।",
+                        "Telugu": "48 గంటల్లో వర్షాలు కురిసే అవకాశం ఉంది. మొక్కజొన్న పంటలపై రసాయన పిచికారీలను వాయిదా వేయండి."
+                    },
+                    "pest_label": {"English": "📞 Logistics Helpline:", "Hindi": "📞 लॉजिस्टिक्स हेल्पलाइन:", "Telugu": "📞 రవాణా సహాయ కేంద్రం:"},
+                    "pest_btn": {"English": "Call Mandi Transport", "Hindi": "मंडी परिवहन को कॉल करें", "Telugu": "మండి రవాణా కి కాల్ చేయి"},
+                    "pest_tel": "+919000154321",
+                
+                    "market_title": {"English": "✅ SEED DEMAND", "Hindi": "✅ बीज की मांग", "Telugu": "✅ విత్తనాల డిమాండ్"},
+                    "market_desc": {
+                        "English": "Strong local demand for Rabi Onion seeds. Subsidies announced by State Agri Department.",
+                        "Hindi": "रबी प्याज के बीजों की स्थानीय स्तर पर भारी मांग है। राज्य कृषि विभाग द्वारा सब्सिडी की घोषणा की गई है।",
+                        "Telugu": "రబీ ఉల్లి విత్తనాలకు స్థానికంగా మంచి డిమాండ్ ఉంది. రాష్ట్ర వ్యవసాయ శాఖ సబ్సిడీలను ప్రకటించింది."
+                    },
+                    "market_label": {"English": "📞 Seed Purchase:", "Hindi": "📞 बीज खरीद:", "Telugu": "📞 విత్తనాల కొనుగోలు:"},
+                    "pest_btn": {"English": "Call Kakatiya Supplies", "Hindi": "काकतीय सप्लाइज को कॉल करें", "Telugu": "కాకతీయ సప్లైస్ కి కాల్ చేయి"},
+                    "pest_tel": "+918888877777"
+                },
+                "default": {
+                    "outbreak_title": {"English": "🚨 OUTBREAK ALERT", "Hindi": "🚨 प्रकोप चेतावनी", "Telugu": "🚨 తెగులు ఉధృతి హెచ్చరిక"},
+                    "outbreak_desc": {
+                        "English": "Late Blight sightings reported in regional potato fields. Cool, wet conditions favor rapid canopy spread.",
+                        "Hindi": "क्षेत्रीय आलू के खेतों में पछेती झुलसा के लक्षण देखे गए हैं। ठंडा और गीला मौसम तेजी से फैलने में मदद करता है।",
+                        "Telugu": "ప్రాంతీయ బంగాళాదుంప పొలాల్లో లేట్ బ్లైట్ తెగులు కనుగొనబడింది. చల్లని, తడి వాతావరణం దీని వ్యాప్తికి అనుకూలం."
+                    },
+                    "outbreak_label": {"English": "📞 Expert Helpline:", "Hindi": "📞 विशेषज्ञ हेल्पलाइन:", "Telugu": "📞 నిపుణుల సహాయ కేంద్రం:"},
+                    "outbreak_btn": {"English": "Call National Ag Helpdesk", "Hindi": "राष्ट्रीय कृषि हेल्पडेस्क को कॉल करें", "Telugu": "జాతీయ వ్యవసాయ సహాయ కేంద్రం కి కాల్ చేయి"},
+                    "outbreak_tel": "+919111122222",
+                
+                    "pest_title": {"English": "⚠️ PEST ADVISORY", "Hindi": "⚠️ कीट सलाह", "Telugu": "⚠️ పురుగుల ఉధృతి హెచ్చరిక"},
+                    "pest_desc": {
+                        "English": "Whitefly populations building up in vegetable crops. Install yellow sticky traps.",
+                        "Hindi": "सब्जियों की फसलों में सफेद मक्खी की आबादी बढ़ रही है। पीले चिपचिपे जाल लगाएं।",
+                        "Telugu": "కూరగాయల పంటలలో తెల్లదోమ ఉధృతి పెరుగుతోంది. పసుపు జిగురు అట్టలను అమర్చండి."
+                    },
+                    "pest_label": {"English": "📞 Bio-Control Agent:", "Hindi": "📞 जैविक नियंत्रण एजेंट:", "Telugu": "📞 జీవ నియంత్రణ ఏజెంట్:"},
+                    "pest_btn": {"English": "Call Seed Emporium", "Hindi": "सीड एम्पोरियम को कॉल करें", "Telugu": "సీడ్ ఎంపోరియం కి కాల్ చేయి"},
+                    "pest_tel": "+919333344444",
+                
+                    "market_title": {"English": "✅ MARKET DECENTRALIZATION", "Hindi": "✅ बाजार विकेंद्रीकरण", "Telugu": "✅ మార్కెట్ వికేంద्रीकरण"},
+                    "market_desc": {
+                        "English": "Digital e-NAM bidding active in nearby mandis. Fast clearances and next-day payments.",
+                        "Hindi": "नजदीकी मंडियों में डिजिटल ई-नाम बोली सक्रिय है। त्वरित मंजूरी और अगले दिन भुगतान।",
+                        "Telugu": "సమీప మండిలలో డిజిటల్ ఈ-నామ్ వేలం ప్రారంభమైంది. వేగవంతమైన చెల్లింపులు."
+                    },
+                    "market_label": {"English": "📞 Sell Crop Directly:", "Hindi": "📞 सीधे फसल बेचें:", "Telugu": "📞 పంటను నేరుగా విక్రయించండి:"},
+                    "market_btn": {"English": "Call Metro Wholesalers", "Hindi": "मेट्रो थोक विक्रेताओं को कॉल करें", "Telugu": "మెట్రో హోల్‌సేలర్స్ కి కాల్ చేయి"},
+                    "market_tel": "+917444455555"
+                }
+            }
+            
+            if "andhra" in detected_region.lower() or "guntur" in detected_region.lower():
+                ad = alerts_data["andhra"]
+            elif "telangana" in detected_region.lower():
+                ad = alerts_data["telangana"]
+            else:
+                ad = alerts_data["default"]
+                
+            alert_html = f"""<div style='background: #fff0f0; border-left: 4px solid #d32f2f; padding: 18px 20px; border-radius: 12px; color: #d32f2f; margin-bottom: 15px; font-family: Inter, sans-serif; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(211,47,47,0.05);'>
+<div style='font-weight: 800; font-size: 1rem; margin-bottom: 6px;'>{ad['outbreak_title'].get(lang, ad['outbreak_title']['English'])} ({detected_area}):</div>
+{ad['outbreak_desc'].get(lang, ad['outbreak_desc']['English'])}
+<div style='margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(211,47,47,0.15); display: flex; align-items: center; justify-content: space-between;'>
+<span style='font-size: 0.85rem; font-weight: 700;'>{ad['outbreak_label'].get(lang, ad['outbreak_label']['English'])}</span>
+<a href='tel:{ad['outbreak_tel']}' style='background: #d32f2f; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: none;'>{ad.get('outbreak_btn', {}).get(lang, ad.get('outbreak_btn', {}).get('English', 'Call'))}</a>
+</div>
+</div>
+<div style='background: #fffbeb; border-left: 4px solid #f59e0b; padding: 18px 20px; border-radius: 12px; color: #b45309; margin-bottom: 15px; font-family: Inter, sans-serif; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(245,158,11,0.05);'>
+<div style='font-weight: 800; font-size: 1rem; margin-bottom: 6px;'>{ad['pest_title'].get(lang, ad['pest_title']['English'])}:</div>
+{ad['pest_desc'].get(lang, ad['pest_desc']['English'])}
+<div style='margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(245,158,11,0.15); display: flex; align-items: center; justify-content: space-between;'>
+<span style='font-size: 0.85rem; font-weight: 700;'>{ad['pest_label'].get(lang, ad['pest_label']['English'])}</span>
+<a href='tel:{ad.get('pest_tel', '+919999988888')}' style='background: #f59e0b; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: none;'>{ad.get('pest_btn', {}).get(lang, ad.get('pest_btn', {}).get('English', 'Call'))}</a>
+</div>
+</div>
+<div style='background: #f0fdf4; border-left: 4px solid #10b981; padding: 18px 20px; border-radius: 12px; color: #166534; margin-bottom: 30px; font-family: Inter, sans-serif; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(16,185,129,0.05);'>
+<div style='font-weight: 800; font-size: 1rem; margin-bottom: 6px;'>{ad['market_title'].get(lang, ad['market_title']['English'])}:</div>
+{ad['market_desc'].get(lang, ad['market_desc']['English'])}
+<div style='margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(16,185,129,0.15); display: flex; align-items: center; justify-content: space-between;'>
+<span style='font-size: 0.85rem; font-weight: 700;'>{ad['market_label'].get(lang, ad['market_label']['English'])}</span>
+<a href='tel:{ad.get('market_tel', '+917777788888')}' style='background: #10b981; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: none;'>{ad.get('market_btn', {}).get(lang, ad.get('market_btn', {}).get('English', 'Call'))}</a>
+</div>
+</div>""".replace("\n", " ").replace("\r", "")
+
+            threat_rows = ""
+            for threat in threats:
+                if threat['severity'] == "high":
+                    sev_badge = f"<span style='background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block;'>{t['severity_high']}</span>"
+                elif threat['severity'] == "medium":
+                    sev_badge = f"<span style='background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block;'>{t['severity_medium']}</span>"
+                else:
+                    sev_badge = f"<span style='background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; padding: 4px 12px; border-radius: 20px; font-size: 0.70rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; display: inline-block;'>{t['severity_low']}</span>"
+                
+                threat_rows += f"""<tr style='border-bottom: 1px solid #f0f0f0;'>
+<td style='padding: 15px; font-weight: 700; color: #2c3e2e;'>{threat['crop']}</td>
+<td style='padding: 15px; color: #b91c1c; font-weight: 600;'>{threat['disease']}</td>
+<td style='padding: 15px;'>{sev_badge}</td>
+<td style='padding: 15px; font-size: 0.85rem; color: #4a4a4a;'>{threat['action']}</td>
+</tr>"""
+            threat_rows = threat_rows.replace("\n", " ").replace("\r", "")
+
+            threats_table = f"""<div style='background: white; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 35px;'>
+<table style='width: 100%; border-collapse: collapse; text-align: left; font-family: Inter, sans-serif;'>
+<thead>
+<tr style='background: #eef2ed; border-bottom: 2px solid #d1ded3; font-size: 0.70rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05rem; color: #3c5a45;'>
+<th style='padding: 15px;'>{t['fh_crop_col']}</th>
+<th style='padding: 15px;'>{t['fh_disease_col']}</th>
+<th style='padding: 15px;'>{t['fh_severity_col']}</th>
+<th style='padding: 15px;'>{t['fh_action_col']}</th>
+</tr>
+</thead>
+<tbody>
+{threat_rows}
+</tbody>
+</table>
+</div>""".replace("\n", " ").replace("\r", "")
+
+            # Render Kisan-Rapido main layout
+            st.markdown(f"""<div class='b-main-card'>
+<h2 class='result-title'>{t['fh_title']} ({detected_region.upper()})</h2>
+</div>""", unsafe_allow_html=True)
+            
+            # Mandi Prices
+            st.markdown(f"""<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>🛰️ {t.get('fh_mandi_title', 'REAL-TIME MANDI RATES')} ({t.get('loc_trends', 'Location')} based)</h4>""", unsafe_allow_html=True)
+            mandi_cards = ""
+            for item in mandi_rates:
+                trend_color = "#10b981" if item['trend'] == "up" else ("#d32f2f" if item['trend'] == "down" else "#f59e0b")
+                trend_icon = "↑" if item['trend'] == "up" else ("↓" if item['trend'] == "down" else "→")
+                mandi_cards += f"""<div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 250px; margin-bottom: 15px;'>
+<div style='font-size: 0.70rem; color: #888; font-family: Inter, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{item['market']}</div>
+<div style='font-size: 1.6rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif; margin: 5px 0;'>{item['crop']}</div>
+<div style='display: flex; align-items: baseline; gap: 10px;'>
+<div style='font-size: 1.3rem; color: #4a4a4a; font-weight: 700;'>{item['rate']}</div>
+<div style='font-size: 0.85rem; color: {trend_color}; font-weight: 600;'>{item['trend_val']} {trend_icon}</div>
+</div>
+<div style='margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;'>
+<div style='font-size: 0.8rem; color: #666; margin-bottom: 6px;'><strong>📍 {t['mandi_loc']}</strong> {item['location']}</div>
+<div style='font-size: 0.8rem; color: #666; margin-bottom: 6px;'><strong>👤 {t['mandi_dealer']}</strong> {item['dealer']}</div>
+<div style='font-size: 0.85rem; color: #3c5a45; font-weight: 600;'><strong>📞 {t['mandi_contact']}</strong> <a href='tel:{item['contact'].replace(" ", "")}' style='color: #3c5a45; text-decoration: none; font-weight: 700;'>{item['contact']}</a></div>
+</div>
+</div>"""
+            mandi_cards = mandi_cards.replace("\n", " ").replace("\r", "")
+            st.markdown(f"""<div style='display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 35px;'>{mandi_cards}</div>""", unsafe_allow_html=True)
+            
+            # Alerts / Threats Layout
+            col_al, col_th = st.columns([1, 1])
+            with col_al:
+                st.markdown(f"""<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>📢 {t['fh_alerts']}</h4>""", unsafe_allow_html=True)
+                st.markdown(alert_html, unsafe_allow_html=True)
+            with col_th:
+                st.markdown(f"""<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>🛡️ {t['fh_regional_crops']}</h4>""", unsafe_allow_html=True)
+                st.markdown(threats_table, unsafe_allow_html=True)
+            
+            st.markdown("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 35px 0;'>", unsafe_allow_html=True)
+            
+            # --- Kisan-Rapido Marketplace ---
+            st.markdown(f"""<div style='background: #3c5a45; color: white; padding: 25px; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(60, 90, 69, 0.15);'>
+<h2 style='color: white; margin: 0 0 10px 0; font-family: Playfair Display, serif;'>{t['mkt_title']}</h2>
+<p style='color: rgba(255,255,255,0.85); margin: 0; font-size: 0.95rem; line-height: 1.5;'>{t['mkt_desc']}</p>
+</div>""", unsafe_allow_html=True)
+            
+            if 'crop_listings' not in st.session_state:
+                st.session_state.crop_listings = [
+                    {
+                        "id": "TXN-8201",
+                        "crop": "Tomato",
+                        "quantity": 40,
+                        "price": 2400,
+                        "pickup": f"{detected_area}, {detected_region}",
+                        "farmer": "K. Srinivas Rao",
+                        "phone": "+91 94401 23456",
+                        "status": "Pending",
+                        "buyer_name": None,
+                        "buyer_phone": None
+                    },
+                    {
+                        "id": "TXN-4912",
+                        "crop": "Onion",
+                        "quantity": 25,
+                        "price": 3100,
+                        "pickup": f"Malakpet, Telangana",
+                        "farmer": "M. Anji Reddy",
+                        "phone": "+91 98480 98765",
+                        "status": "Accepted",
+                        "buyer_name": "Ramu Metro Foods",
+                        "buyer_phone": "+91 74444 55555"
+                    },
+                    {
+                        "id": "TXN-1052",
+                        "crop": "Chilli",
+                        "quantity": 15,
+                        "price": 14800,
+                        "pickup": f"Warangal, Telangana",
+                        "farmer": "G. Venkatesh",
+                        "phone": "+91 90001 54321",
+                        "status": "Pending",
+                        "buyer_name": None,
+                        "buyer_phone": None
+                    }
+                ]
+            
+            col_mkt_l, col_mkt_r = st.columns([1.2, 1.8])
+            
+            with col_mkt_l:
+                with st.container(border=True):
+                    st.markdown(f"""<h3 style='margin-top: 0; font-family: Playfair Display, serif; color: #2c3e2e;'>{t['mkt_post_title']}</h3>""", unsafe_allow_html=True)
+                    mkt_crop = st.selectbox(t['mkt_crop_name'], ["Tomato", "Potato", "Onion", "Chilli", "Cotton", "Rice", "Maize"], key="mkt_crop_sel")
+                    mkt_qty = st.number_input(t['mkt_quantity'], min_value=1.0, value=10.0, step=1.0, key="mkt_qty_input")
+                    mkt_prc = st.number_input(t['mkt_price'], min_value=100, value=2500, step=50, key="mkt_price_input")
+                    mkt_pck = st.text_input(t['mkt_pickup'], value=f"{detected_area}, {detected_region}", key="mkt_pickup_input")
+                    mkt_frm = st.text_input(t['mkt_farmer'], value="Kisan Lal", key="mkt_farmer_input")
+                    mkt_phn = st.text_input(t['mkt_phone'], value="+91 99999 77777", key="mkt_phone_input")
+                    
+                    if st.button(t['mkt_btn_post'], type="primary", use_container_width=True):
+                        import random
+                        txn_id = f"TXN-{random.randint(1000, 9999)}"
+                        new_item = {
+                            "id": txn_id,
+                            "crop": mkt_crop,
+                            "quantity": mkt_qty,
+                            "price": mkt_prc,
+                            "pickup": mkt_pck,
+                            "farmer": mkt_frm,
+                            "phone": mkt_phn,
+                            "status": "Pending",
+                            "buyer_name": None,
+                            "buyer_phone": None
+                        }
+                        st.session_state.crop_listings.insert(0, new_item)
+                        st.success(t['mkt_success_post'])
+                        st.rerun()
+            
+            with col_mkt_r:
+                st.markdown(f"""<h3 style='margin-top: 0; font-family: Playfair Display, serif; color: #2c3e2e;'>{t['mkt_active_title']}</h3>""", unsafe_allow_html=True)
+                listings = st.session_state.crop_listings
+                if not listings:
+                    st.info(t['mkt_empty_listings'])
+                else:
+                    for list_item in listings:
+                        is_pending = list_item['status'] == "Pending"
+                        status_color = "#f59e0b" if is_pending else "#10b981"
+                        status_label = t['mkt_deal_pending'] if is_pending else t['mkt_deal_accepted']
+                        
+                        card_style = "background: white; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 15px;"
+                        if not is_pending:
+                            card_style = "background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 15px rgba(16,185,129,0.05); padding: 20px; margin-bottom: 15px;"
+                            
+                        buyer_info_html = ""
+                        if not is_pending:
+                            buyer_info_html = f"""<div style='margin-top: 15px; padding-top: 15px; border-top: 1px solid #bbf7d0; font-size: 0.85rem;'>
+<div style='margin-bottom: 4px;'><strong>👤 {t['mkt_buyer_name']}:</strong> {list_item['buyer_name']}</div>
+<div style='margin-bottom: 4px;'><strong>📞 {t['mkt_buyer_phone']}:</strong> {list_item['buyer_phone']}</div>
+<div style='margin-bottom: 8px;'><strong>🔑 {t['mkt_deal_code']}:</strong> <span style='font-family: monospace; font-weight: 700; color: #166534;'>{list_item['id']}</span></div>
+<div style='display: flex; gap: 10px;'>
+<a href='tel:{list_item['buyer_phone'].replace(" ", "")}' style='display: inline-block; background: #3c5a45; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.75rem; font-weight: 700;'>📞 {t['mkt_call_now']}</a>
+<a href='https://wa.me/{list_item['buyer_phone'].replace(" ", "").replace("+", "")}' target='_blank' style='display: inline-block; background: #25d366; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.75rem; font-weight: 700;'>WhatsApp</a>
+</div>
+</div>"""
+                        
+                        total_expected = list_item['quantity'] * list_item['price']
+                        
+                        listing_html = f"""<div style='{card_style}'>
+<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;'>
+<span style='font-size: 0.70rem; color: #888; font-weight: 800; text-transform: uppercase;'>ID: {list_item['id']}</span>
+<span style='background: {status_color}; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;'>{status_label}</span>
+</div>
+<div style='font-size: 1.4rem; font-weight: 700; color: #2c3e2e;'>{list_item['crop']}</div>
+<div style='font-size: 0.85rem; color: #4a4a4a; margin: 8px 0; line-height: 1.5;'>
+<strong>📦 Quantity:</strong> {list_item['quantity']} Quintals @ <strong>₹{list_item['price']}/q</strong><br>
+<strong>💰 Value:</strong> <span style='color: #15803d; font-weight: 700;'>₹{total_expected:,}</span><br>
+<strong>📍 Pickup:</strong> {list_item['pickup']}<br>
+<strong>👤 Farmer:</strong> {list_item['farmer']} (<a href='tel:{list_item['phone'].replace(" ", "")}' style='color: #3c5a45; font-weight: 600;'>{list_item['phone']}</a>)
+</div>
+{buyer_info_html}
+</div>"""
+                        listing_html = listing_html.replace("\n", " ").replace("\r", "")
+                        st.markdown(listing_html, unsafe_allow_html=True)
+                        
+                        if is_pending:
+                            with st.expander(t['mkt_btn_accept'], expanded=False):
+                                b_name = st.text_input(t['mkt_buyer_name'], value="Buyer Kumar", key=f"bname_{list_item['id']}")
+                                b_phone = st.text_input(t['mkt_buyer_phone'], value="+91 99999 88888", key=f"bphone_{list_item['id']}")
+                                if st.button("🤝 Confirm Deal", key=f"btn_{list_item['id']}"):
+                                    list_item['buyer_name'] = b_name
+                                    list_item['buyer_phone'] = b_phone
+                                    list_item['status'] = "Accepted"
+                                    st.success(f"Deal confirmed for {list_item['crop']}!")
+                                    st.rerun()
+
+
         elif nav_selection == "SCHEMES":
             st.markdown(f"<h2 class='result-title' style='margin-bottom: 15px;'>{t['sch_title']}</h2>", unsafe_allow_html=True)
             
