@@ -52,14 +52,21 @@ div[data-testid="stStatusWidget"] {{ display: none !important; }}
 
 /* Premium Styled Specimen Image Preview */
 [data-testid="stImage"] img {{
+    max-width: 240px !important;
+    max-height: 240px !important;
+    object-fit: cover !important;
     border-radius: 16px !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border: 2px solid #3c5a45 !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-    margin-top: 12px !important;
+    margin: 12px auto !important;
+    display: block !important;
     transition: transform 0.3s ease !important;
 }}
 [data-testid="stImage"] img:hover {{
     transform: scale(1.02);
+}}
+[data-testid="stImage"] {{
+    text-align: center !important;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -67,6 +74,14 @@ div[data-testid="stStatusWidget"] {{ display: none !important; }}
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         return base64.b64encode(f.read()).decode()
+
+def get_image_base64(image):
+    import io
+    buffered = io.BytesIO()
+    if image.mode in ("RGBA", "P"):
+        image = image.convert("RGB")
+    image.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode()
 
 def get_background_url():
     for ext in ["jpg", "jpeg", "png"]:
@@ -484,12 +499,17 @@ with col_left:
 {status_pill}
 <span class='action-btn' style='margin: 0;'>{t['download']}</span>
 </div>
-<div style='margin-bottom: 25px;'>
-<span class='pill-dark'>{t['crop']}: {crop_name.upper()}</span>
-<span style='font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;'>{t['ai_id']} ({confidence:.1f}%)</span>
-</div>
 
-<h1 class='result-title'>{disease_translated}</h1>
+<div style='display: flex; gap: 20px; align-items: center; margin-bottom: 25px; flex-wrap: wrap;'>
+    <img src='data:image/jpeg;base64,{get_image_base64(image)}' style='width: 120px; height: 120px; object-fit: cover; border-radius: 12px; border: 2px solid #3c5a45; box-shadow: 0 4px 10px rgba(0,0,0,0.1);' />
+    <div>
+        <div style='margin-bottom: 8px;'>
+            <span class='pill-dark'>{t['crop']}: {crop_name.upper()}</span>
+            <span style='font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem; margin-left: 10px;'>{t['ai_id']} ({confidence:.1f}%)</span>
+        </div>
+        <h1 class='result-title' style='margin: 0; font-size: 2.2rem;'>{disease_translated}</h1>
+    </div>
+</div>
 
 <!-- Internal Fake Tabs -->
 <div style='display: flex; gap: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 30px; margin-top: 30px;'>
@@ -766,7 +786,7 @@ with col_left:
                         "outbreak_title": {"English": "🚨 OUTBREAK ALERT", "Hindi": "🚨 प्रकोप चेतावनी", "Telugu": "🚨 తెగులు ఉధృతి హెచ్చరిక"},
                         "outbreak_desc": {
                             "English": "Rice Blast spores detected in adjacent blocks. Warm nights and high relative humidity (>90%) favor infection. Apply Tricyclazole preventatively.",
-                            "Hindi": "आस-पास के ब्लॉक में राइस ब्लास्ट (धान का झुलसा रोग) के बीजाणु पाए गए हैं। गर्म रातें और उच्च सापेक्ष आर्द्रता (>90%) संक्रमण के अनुकूल हैं। निवारक के रूप में ट्राइसाइक्लाजोल लगाएं।",
+ -                             "Hindi": "आस-पास के ब्लॉक में राइस ब्लास्ट (धान का झुलसा रोग) के बीजाणु पाए गए हैं। गर्म रातें और उच्च सापेक्ष आर्द्रता (>90%) संक्रमण के अनुकूल हैं। निवारक के रूप में ट्राइसाइक्लाजोल लगाएं।",
                             "Telugu": "సమీప ప్రాంతాలలో వరి అగ్గి తెగులు (రైస్ బ్లాస్ట్) వ్యాప్తి కనుగొనబడింది. వెచ్చని రాత్రులు మరియు అధిక సాపేక్ష ఆర్ద్రత (>90%) తెగులు సోకడానికి అనుకూలంగా ఉంటాయి. ముందస్తు నివారణగా ట్రైసైక్లాజోల్ పిచికారీ చేయండి."
                         },
                         "outbreak_label": {"English": "📞 Local Expert Help desk:", "Hindi": "📞 स्थानीय विशेषज्ञ हेल्प डेस्क:", "Telugu": "📞 స్థానిక నిపుణుల సహాయ కేంద్రం:"},
