@@ -298,6 +298,9 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Fetch Weather Info (Dynamically based on language)
+if 'loc_detected' not in st.session_state:
+    st.session_state.loc_detected = True
+
 lang = st.session_state.get('lang', 'English')
 if 'weather_lang' not in st.session_state or st.session_state.weather_lang != lang:
     st.session_state.weather, st.session_state.detected_region, st.session_state.detected_area = get_weather(lang)
