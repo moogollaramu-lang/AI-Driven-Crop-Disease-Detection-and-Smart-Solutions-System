@@ -813,7 +813,7 @@ with col_left:
                         "Telugu": "రబీ ఉల్లి విత్తనాలకు స్థానికంగా మంచి డిమాండ్ ఉంది. రాష్ట్ర వ్యవసాయ శాఖ సబ్సిడీలను ప్రకటించింది."
                     },
                     "market_label": {"English": "📞 Seed Purchase:", "Hindi": "📞 बीज खरीद:", "Telugu": "📞 విత్తనాల కొనుగోలు:"},
-                    "pest_btn": {"English": "Call Kakatiya Supplies", "Hindi": "काकतीय सप्लाइज को कॉल करें", "Telugu": "కాకతీయ సప్లైస్ కి కాల్ చేయి"},
+                    "pest_btn": {"English": "Call Kakatiya Supplies", "Hindi": "काकतीय सप्लाइज को कॉल करें", "Telugu": "కాకతీయ सप्लाइज కి కాల్ చేయి"},
                     "pest_tel": "+918888877777"
                 },
                 "default": {
@@ -833,11 +833,11 @@ with col_left:
                         "Hindi": "सब्जियों की फसलों में सफेद मक्खी की आबादी बढ़ रही है। पीले चिपचिपे जाल लगाएं।",
                         "Telugu": "కూరగాయల పంటలలో తెల్లదోమ ఉధృతి పెరుగుతోంది. పసుపు జిగురు అట్టలను అమర్చండి."
                     },
-                    "pest_label": {"English": "📞 Bio-Control Agent:", "Hindi": "📞 जैविक नियंत्रण एजेंट:", "Telugu": "📞 జీవ నియంత్రణ ఏజెంట్:"},
+                    "pest_label": {"English": "📞 Bio-Control Agent:", "Hindi": "📞 जैविक नियंत्रण एजेंट:", "Telugu": "📞 जैविक नियंत्रण एजेंट:"},
                     "pest_btn": {"English": "Call Seed Emporium", "Hindi": "सीड एम्पोरियम को कॉल करें", "Telugu": "సీడ్ ఎంపోరియం కి కాల్ చేయి"},
                     "pest_tel": "+919333344444",
                 
-                    "market_title": {"English": "✅ MARKET DECENTRALIZATION", "Hindi": "✅ बाजार विकेंद्रीकरण", "Telugu": "✅ మార్కెట్ వికేంద्रीकरण"},
+                    "market_title": {"English": "✅ MARKET DECENTRALIZATION", "Hindi": "✅ बाजार विकेंद्रीकरण", "Telugu": "✅ మార్కెట్ వికేంద్రీకరణ"},
                     "market_desc": {
                         "English": "Digital e-NAM bidding active in nearby mandis. Fast clearances and next-day payments.",
                         "Hindi": "नजदीकी मंडियों में डिजिटल ई-नाम बोली सक्रिय है। त्वरित मंजूरी और अगले दिन भुगतान।",
@@ -914,13 +914,6 @@ with col_left:
 </table>
 </div>""".replace("\n", " ").replace("\r", "")
 
-            # Render Kisan-Rapido main layout
-            st.markdown(f"""<div class='b-main-card'>
-<h2 class='result-title'>{t['fh_title']} ({detected_region.upper()})</h2>
-</div>""", unsafe_allow_html=True)
-            
-            # Mandi Prices
-            st.markdown(f"""<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>🛰️ {t.get('fh_mandi_title', 'REAL-TIME MANDI RATES')} ({t.get('loc_trends', 'Location')} based)</h4>""", unsafe_allow_html=True)
             mandi_cards = ""
             for item in mandi_rates:
                 trend_color = "#10b981" if item['trend'] == "up" else ("#d32f2f" if item['trend'] == "down" else "#f59e0b")
@@ -939,154 +932,60 @@ with col_left:
 </div>
 </div>"""
             mandi_cards = mandi_cards.replace("\n", " ").replace("\r", "")
-            st.markdown(f"""<div style='display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 35px;'>{mandi_cards}</div>""", unsafe_allow_html=True)
-            
-            # Alerts / Threats Layout
-            col_al, col_th = st.columns([1, 1])
-            with col_al:
-                st.markdown(f"""<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>📢 {t['fh_alerts']}</h4>""", unsafe_allow_html=True)
-                st.markdown(alert_html, unsafe_allow_html=True)
-            with col_th:
-                st.markdown(f"""<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>🛡️ {t['fh_regional_crops']}</h4>""", unsafe_allow_html=True)
-                st.markdown(threats_table, unsafe_allow_html=True)
-            
-            st.markdown("<hr style='border: 0; border-top: 1px solid #e0e0e0; margin: 35px 0;'>", unsafe_allow_html=True)
-            
-            # --- Kisan-Rapido Marketplace ---
-            st.markdown(f"""<div style='background: #3c5a45; color: white; padding: 25px; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(60, 90, 69, 0.15);'>
-<h2 style='color: white; margin: 0 0 10px 0; font-family: Playfair Display, serif;'>{t['mkt_title']}</h2>
-<p style='color: rgba(255,255,255,0.85); margin: 0; font-size: 0.95rem; line-height: 1.5;'>{t['mkt_desc']}</p>
-</div>""", unsafe_allow_html=True)
-            
-            if 'crop_listings' not in st.session_state:
-                st.session_state.crop_listings = [
-                    {
-                        "id": "TXN-8201",
-                        "crop": "Tomato",
-                        "quantity": 40,
-                        "price": 2400,
-                        "pickup": f"{detected_area}, {detected_region}",
-                        "farmer": "K. Srinivas Rao",
-                        "phone": "+91 94401 23456",
-                        "status": "Pending",
-                        "buyer_name": None,
-                        "buyer_phone": None
-                    },
-                    {
-                        "id": "TXN-4912",
-                        "crop": "Onion",
-                        "quantity": 25,
-                        "price": 3100,
-                        "pickup": f"Malakpet, Telangana",
-                        "farmer": "M. Anji Reddy",
-                        "phone": "+91 98480 98765",
-                        "status": "Accepted",
-                        "buyer_name": "Ramu Metro Foods",
-                        "buyer_phone": "+91 74444 55555"
-                    },
-                    {
-                        "id": "TXN-1052",
-                        "crop": "Chilli",
-                        "quantity": 15,
-                        "price": 14800,
-                        "pickup": f"Warangal, Telangana",
-                        "farmer": "G. Venkatesh",
-                        "phone": "+91 90001 54321",
-                        "status": "Pending",
-                        "buyer_name": None,
-                        "buyer_phone": None
-                    }
-                ]
-            
-            col_mkt_l, col_mkt_r = st.columns([1.2, 1.8])
-            
-            with col_mkt_l:
-                with st.container(border=True):
-                    st.markdown(f"""<h3 style='margin-top: 0; font-family: Playfair Display, serif; color: #2c3e2e;'>{t['mkt_post_title']}</h3>""", unsafe_allow_html=True)
-                    mkt_crop = st.selectbox(t['mkt_crop_name'], ["Tomato", "Potato", "Onion", "Chilli", "Cotton", "Rice", "Maize"], key="mkt_crop_sel")
-                    mkt_qty = st.number_input(t['mkt_quantity'], min_value=1.0, value=10.0, step=1.0, key="mkt_qty_input")
-                    mkt_prc = st.number_input(t['mkt_price'], min_value=100, value=2500, step=50, key="mkt_price_input")
-                    mkt_pck = st.text_input(t['mkt_pickup'], value=f"{detected_area}, {detected_region}", key="mkt_pickup_input")
-                    mkt_frm = st.text_input(t['mkt_farmer'], value="Kisan Lal", key="mkt_farmer_input")
-                    mkt_phn = st.text_input(t['mkt_phone'], value="+91 99999 77777", key="mkt_phone_input")
-                    
-                    if st.button(t['mkt_btn_post'], type="primary", use_container_width=True):
-                        import random
-                        txn_id = f"TXN-{random.randint(1000, 9999)}"
-                        new_item = {
-                            "id": txn_id,
-                            "crop": mkt_crop,
-                            "quantity": mkt_qty,
-                            "price": mkt_prc,
-                            "pickup": mkt_pck,
-                            "farmer": mkt_frm,
-                            "phone": mkt_phn,
-                            "status": "Pending",
-                            "buyer_name": None,
-                            "buyer_phone": None
-                        }
-                        st.session_state.crop_listings.insert(0, new_item)
-                        st.success(t['mkt_success_post'])
-                        st.rerun()
-            
-            with col_mkt_r:
-                st.markdown(f"""<h3 style='margin-top: 0; font-family: Playfair Display, serif; color: #2c3e2e;'>{t['mkt_active_title']}</h3>""", unsafe_allow_html=True)
-                listings = st.session_state.crop_listings
-                if not listings:
-                    st.info(t['mkt_empty_listings'])
-                else:
-                    for list_item in listings:
-                        is_pending = list_item['status'] == "Pending"
-                        status_color = "#f59e0b" if is_pending else "#10b981"
-                        status_label = t['mkt_deal_pending'] if is_pending else t['mkt_deal_accepted']
-                        
-                        card_style = "background: white; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 15px;"
-                        if not is_pending:
-                            card_style = "background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 15px rgba(16,185,129,0.05); padding: 20px; margin-bottom: 15px;"
-                            
-                        buyer_info_html = ""
-                        if not is_pending:
-                            buyer_info_html = f"""<div style='margin-top: 15px; padding-top: 15px; border-top: 1px solid #bbf7d0; font-size: 0.85rem;'>
-<div style='margin-bottom: 4px;'><strong>👤 {t['mkt_buyer_name']}:</strong> {list_item['buyer_name']}</div>
-<div style='margin-bottom: 4px;'><strong>📞 {t['mkt_buyer_phone']}:</strong> {list_item['buyer_phone']}</div>
-<div style='margin-bottom: 8px;'><strong>🔑 {t['mkt_deal_code']}:</strong> <span style='font-family: monospace; font-weight: 700; color: #166534;'>{list_item['id']}</span></div>
-<div style='display: flex; gap: 10px;'>
-<a href='tel:{list_item['buyer_phone'].replace(" ", "")}' style='display: inline-block; background: #3c5a45; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.75rem; font-weight: 700;'>📞 {t['mkt_call_now']}</a>
-<a href='https://wa.me/{list_item['buyer_phone'].replace(" ", "").replace("+", "")}' target='_blank' style='display: inline-block; background: #25d366; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.75rem; font-weight: 700;'>WhatsApp</a>
+
+            conn_cards = ""
+            for c in contacts:
+                role_lbl = t.get(c['role_key'], c['role_key'].replace("role_", "").title())
+                conn_cards += f"""<div style='flex: 1; background: white; padding: 20px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 250px; margin-bottom: 15px;'>
+<div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px;'>
+<div style='background: #e8ede9; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #3c5a45;'>👤</div>
+<div>
+<div style='font-size: 0.65rem; color: #888; font-family: Inter, sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05rem;'>{role_lbl}</div>
+<div style='font-size: 0.95rem; font-weight: 700; color: #2c3e2e; font-family: Inter, sans-serif;'>{c['name']}</div>
+</div>
+</div>
+<div style='font-size: 0.8rem; color: #666; margin-bottom: 15px; min-height: 32px;'>
+<strong>🏷️ Speciality:</strong> {c['spec']}
+</div>
+<div style='padding-top: 15px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;'>
+<a href='tel:{c['contact'].replace(" ", "")}' style='display: flex; align-items: center; gap: 6px; background: #e8ede9; color: #3c5a45; padding: 6px 12px; border-radius: 12px; text-decoration: none; font-size: 0.8rem; font-weight: 700;'>
+📞 {c['contact']}
+</a>
+<a href='https://wa.me/{c['contact'].replace(" ", "").replace("+", "")}' target='_blank' style='display: inline-block; background: #25d366; color: white; padding: 6px 12px; border-radius: 12px; text-decoration: none; font-size: 0.75rem; font-weight: 700;'>
+WhatsApp
+</a>
 </div>
 </div>"""
-                        
-                        total_expected = list_item['quantity'] * list_item['price']
-                        
-                        listing_html = f"""<div style='{card_style}'>
-<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;'>
-<span style='font-size: 0.70rem; color: #888; font-weight: 800; text-transform: uppercase;'>ID: {list_item['id']}</span>
-<span style='background: {status_color}; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;'>{status_label}</span>
-</div>
-<div style='font-size: 1.4rem; font-weight: 700; color: #2c3e2e;'>{list_item['crop']}</div>
-<div style='font-size: 0.85rem; color: #4a4a4a; margin: 8px 0; line-height: 1.5;'>
-<strong>📦 Quantity:</strong> {list_item['quantity']} Quintals @ <strong>₹{list_item['price']}/q</strong><br>
-<strong>💰 Value:</strong> <span style='color: #15803d; font-weight: 700;'>₹{total_expected:,}</span><br>
-<strong>📍 Pickup:</strong> {list_item['pickup']}<br>
-<strong>👤 Farmer:</strong> {list_item['farmer']} (<a href='tel:{list_item['phone'].replace(" ", "")}' style='color: #3c5a45; font-weight: 600;'>{list_item['phone']}</a>)
-</div>
-{buyer_info_html}
-</div>"""
-                        listing_html = listing_html.replace("\n", " ").replace("\r", "")
-                        st.markdown(listing_html, unsafe_allow_html=True)
-                        
-                        if is_pending:
-                            with st.expander(t['mkt_btn_accept'], expanded=False):
-                                b_name = st.text_input(t['mkt_buyer_name'], value="Buyer Kumar", key=f"bname_{list_item['id']}")
-                                b_phone = st.text_input(t['mkt_buyer_phone'], value="+91 99999 88888", key=f"bphone_{list_item['id']}")
-                                if st.button("🤝 Confirm Deal", key=f"btn_{list_item['id']}"):
-                                    list_item['buyer_name'] = b_name
-                                    list_item['buyer_phone'] = b_phone
-                                    list_item['status'] = "Accepted"
-                                    st.success(f"Deal confirmed for {list_item['crop']}!")
-                                    st.rerun()
+            conn_cards = conn_cards.replace("\n", " ").replace("\r", "")
 
+            fh_content = f"""<div class='b-main-card'>
+<h2 class='result-title'>{t['fh_title']} ({detected_region.upper()})</h2>
 
+<!-- Regional Alerts -->
+<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_alerts']}</h4>
+{alert_html}
+
+<!-- Regional Crops and Diseases -->
+<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_regional_crops']}</h4>
+{threats_table}
+
+<!-- Crop Markets Mandi Rates -->
+<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t.get('fh_mandi_title', 'REAL-TIME MANDI RATES')}</h4>
+<div style='display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 35px;'>
+{mandi_cards}
+</div>
+
+<!-- Market Community Connectivity -->
+<h4 style='font-family: Inter, sans-serif; color: #888; margin-bottom: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05rem;'>{t['fh_community_connectivity']}</h4>
+<p style='font-family: Inter, sans-serif; font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5;'>{t['fh_conn_desc']}</p>
+<div style='display: flex; gap: 20px; flex-wrap: wrap;'>
+{conn_cards}
+</div>
+
+</div>""".replace("\n", " ").replace("\r", "")
+
+            st.markdown(fh_content, unsafe_allow_html=True)
+            
         elif nav_selection == "SCHEMES":
             st.markdown(f"<h2 class='result-title' style='margin-bottom: 15px;'>{t['sch_title']}</h2>", unsafe_allow_html=True)
             
